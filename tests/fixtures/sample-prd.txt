@@ -1,0 +1,42 @@
+# Sample PRD for Testing
+
+<PRD>
+# Technical Architecture
+
+## System Components
+1. **Task Management Core**
+   - Tasks.json file structure
+   - Task model with dependencies
+   - Task state management
+
+2. **Command Line Interface**
+   - Command parsing and execution
+   - Display utilities
+
+## Data Models
+
+### Task Model
+```json
+{
+  "id": 1,
+  "title": "Task Title",
+  "description": "Brief task description",
+  "status": "pending|done|deferred",
+  "dependencies": [0],
+  "priority": "high|medium|low",
+  "details": "Implementation instructions",
+  "testStrategy": "Verification approach"
+}
+```
+
+# Development Roadmap
+
+## Phase 1: Core Task Management System
+1. **Task Data Structure**
+   - Implement the tasks.json structure
+   - Create file system interactions
+
+2. **Command Line Interface Foundation**
+   - Implement command parsing
+   - Create help documentation
+</PRD> 

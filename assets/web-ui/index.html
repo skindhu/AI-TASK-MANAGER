@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Master - Task Management</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="logo">
+        <h1>AI任务管理</h1>
+      </div>
+      <div class="header-controls">
+        <button id="refresh-btn" title="Refresh Tasks">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="tasks-container">
+        <div class="tasks-header">
+          <h2>Tasks</h2>
+          <div class="filter-controls">
+            <select id="status-filter">
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="done">Done</option>
+              <option value="deferred">Deferred</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="tasks-list" class="tasks-list">
+          <!-- Tasks will be dynamically loaded here -->
+          <div class="loading">Loading tasks...</div>
+        </div>
+      </div>
+
+      <div class="task-details-panel">
+        <div id="task-details" class="task-details">
+          <div class="empty-state">
+            <i class="far fa-clipboard"></i>
+            <p>Select a task to view details</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>Task Master Web UI</p>
+    </footer>
+  </div>
+
+  <!-- Templates -->
+  <template id="task-template">
+    <div class="task-item" data-id="">
+      <div class="task-header">
+        <div class="task-title-container">
+          <div class="expander"><i class="fas fa-chevron-right"></i></div>
+          <h3 class="task-title"></h3>
+          <span class="task-status"></span>
+        </div>
+        <div class="task-id"></div>
+      </div>
+      <div class="subtasks-container" style="display: none;">
+        <!-- Subtasks will be dynamically loaded here -->
+      </div>
+    </div>
+  </template>
+
+  <template id="subtask-template">
+    <div class="subtask-item">
+      <span class="subtask-id"></span>
+      <span class="subtask-title"></span>
+      <span class="subtask-status"></span>
+    </div>
+  </template>
+
+  <template id="task-details-template">
+    <div class="task-details-content">
+      <h2 class="detail-title"></h2>
+      <div class="detail-info">
+        <div class="detail-row">
+          <span class="detail-label">ID:</span>
+          <span class="detail-id"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Status:</span>
+          <span class="detail-status"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Priority:</span>
+          <span class="detail-priority"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Dependencies:</span>
+          <span class="detail-dependencies"></span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Description</h3>
+        <p class="detail-description"></p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Details</h3>
+        <pre class="detail-details"></pre>
+      </div>
+
+      <div class="detail-section">
+        <h3>Test Strategy</h3>
+        <pre class="detail-test-strategy"></pre>
+      </div>
+
+      <div class="detail-section subtasks-section">
+        <h3>Subtasks</h3>
+        <div class="detail-subtasks"></div>
+      </div>
+
+      <div class="detail-actions">
+        <select class="status-selector">
+          <option value="pending">Pending</option>
+          <option value="done">Done</option>
+          <option value="deferred">Deferred</option>
+        </select>
+        <button class="update-status-btn">Update Status</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
