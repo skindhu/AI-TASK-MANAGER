@@ -56,8 +56,6 @@ Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/c
 
 ### 可选配置
 
-- `ANTHROPIC_API_KEY`: 用于Claude的Anthropic API密钥(可选，用于传统支持)
-- `MODEL`: 指定要使用的模型 (默认: "gemini-2.5-pro")
 - `MAX_TOKENS`: 模型响应的最大令牌数 (默认: 8192)
 - `TEMPERATURE`: 模型响应的温度 (默认: 0.7)
 - `GEMINI_BASE_URL`: Google Gemini的自定义API端点 (可选)
