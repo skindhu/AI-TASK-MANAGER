@@ -25,7 +25,7 @@ Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/c
 这些改进使Task Master成为一个更强大、更友好的AI任务管理工具，特别适合中文开发者使用。
 ## 系统截图
 
-![Task Master Web UI](assets/manager.png)
+![Task Master Web UI](https://wechat-account-1251781786.cos.ap-guangzhou.myqcloud.com/co-drawing/manager.png)
 
 *Task Master Web界面展示了任务列表和详细信息，支持中英双语显示和状态管理*
 
