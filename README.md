@@ -6,7 +6,7 @@
 
 ## 项目背景
 
-Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/claude-task-master) 项目的增强和改进版本。分析了原始项目的设计理念和能力后，发现其具有以下不足：
+AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/claude-task-master) 项目的增强和改进版本。分析了原始项目的设计理念和能力后，发现其具有以下不足：
 
 1. **模型限制**：项目使用的Claude模型API费用高昂（输入$3/百万token，输出$15/百万token），且Claude风控极其严格，API在国内容易被封禁。
 2. **知识融合不足**：任务拆分完全依赖PRD文档，缺乏对业务知识的深入理解。
@@ -43,7 +43,6 @@ Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/c
 
 - Node.js 14.0.0 或更高版本
 - Google API key (用于Gemini API访问)
-- Anthropic API key (可选，用于传统Claude API支持)
 - OpenAI SDK (可选，用于Perplexity API集成)
 
 ## 配置
