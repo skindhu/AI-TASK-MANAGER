@@ -4,6 +4,9 @@
 
 一个用于AI驱动开发的通用任务管理系统，使用Google Gemini模型，专为与Cursor AI无缝协作而设计。
 
+## 相关文章介绍
+[Vibe coding 最后一公里： 打造一套通用的AI任务拆分和管理系统](https://mp.weixin.qq.com/s/uyBh28lNed4XMaFbS2g25Q)
+
 ## 项目背景
 
 AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/claude-task-master) 项目的增强和改进版本。分析了原始项目的设计理念和能力后，发现其具有以下不足：
@@ -28,9 +31,6 @@ AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledan
 ![Task Master Web UI](https://wechat-account-1251781786.cos.ap-guangzhou.myqcloud.com/co-drawing/manager.png)
 
 *Task Master Web界面展示了任务列表和详细信息，支持中英双语显示和状态管理*
-
-## 相关文章介绍
-[Vibe coding 最后一公里： 打造一套通用的AI任务拆分和管理系统](https://mp.weixin.qq.com/s/uyBh28lNed4XMaFbS2g25Q)
 
 
 ## 核心优势
