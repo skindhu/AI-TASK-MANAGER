@@ -29,6 +29,8 @@ AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledan
 
 *Task Master Web界面展示了任务列表和详细信息，支持中英双语显示和状态管理*
 
+## 相关文章介绍
+[Vibe coding 最后一公里： 打造一套通用的AI任务拆分和管理系统](https://mp.weixin.qq.com/s/uyBh28lNed4XMaFbS2g25Q)
 
 
 ## 核心优势
@@ -625,3 +627,6 @@ task-master server --debug-paths
 - **静态文件解析**: 增强路径检测以可靠地提供静态资产
 - **执行权限处理**: CLI运行器自动设置适当的执行权限
 - **路径调试**: 调试模式帮助排查部署问题
+
+## 若希望了解更多AI探索相关的内容，可关注作者公众号
+<img src="https://wechat-account-1251781786.cos.ap-guangzhou.myqcloud.com/wechat_account.jpeg" width="30%">
