@@ -75,10 +75,10 @@ AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledan
 
 ```bash
 # 全局安装
-npm install -g task-manager-ai
+npm install -g ai-task-manager
 
 # 或在项目中本地安装
-npm install task-manager-ai
+npm install ai-task-manager
 ```
 
 ### 初始化新项目
