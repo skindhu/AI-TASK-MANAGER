@@ -29,8 +29,8 @@ function showPathDebugInfo() {
   const possiblePaths = [
     path.resolve(process.cwd(), 'assets/web-ui'),
     path.resolve(__dirname, '../../assets/web-ui'),
-    path.resolve(process.cwd(), 'claude-task-master/assets/web-ui'),
-    path.resolve('/Users/huli/open_source/claude-task-master/assets/web-ui')
+    path.resolve(process.cwd(), 'claude-task-manager/assets/web-ui'),
+    path.resolve('/Users/huli/open_source/claude-task-manager/assets/web-ui')
   ];
 
   console.log(chalk.white('Possible static file paths:'));
@@ -66,7 +66,7 @@ function showPathDebugInfo() {
 
 // Set up CLI
 program
-  .name('task-master-server')
+  .name('task-manager-server')
   .description('Task Master Web UI Server')
   .option('-p, --port <port>', 'Port to run the server on', '3002')
   .option('-f, --file <file>', 'Path to the tasks file', 'tasks/tasks.json')

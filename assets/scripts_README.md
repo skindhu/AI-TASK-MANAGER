@@ -38,19 +38,19 @@ The script can be configured through environment variables in a `.env` file at t
 
 ## How It Works
 
-1. **`tasks.json`**:  
-   - A JSON file at the project root containing an array of tasks (each with `id`, `title`, `description`, `status`, etc.).  
-   - The `meta` field can store additional info like the project's name, version, or reference to the PRD.  
+1. **`tasks.json`**:
+   - A JSON file at the project root containing an array of tasks (each with `id`, `title`, `description`, `status`, etc.).
+   - The `meta` field can store additional info like the project's name, version, or reference to the PRD.
    - Tasks can have `subtasks` for more detailed implementation steps.
    - Dependencies are displayed with status indicators (✅ for completed, ⏱️ for pending) to easily track progress.
 
-2. **CLI Commands**  
+2. **CLI Commands**
    You can run the commands via:
 
    ```bash
    # If installed globally
-   task-master [command] [options]
-   
+   task-manager [command] [options]
+
    # If using locally within the project
    node scripts/dev.js [command] [options]
    ```
@@ -75,7 +75,7 @@ The script can be configured through environment variables in a `.env` file at t
    - `fix-dependencies`: Fix invalid dependencies automatically
    - `add-task`: Add a new task using AI
 
-   Run `task-master --help` or `node scripts/dev.js --help` to see detailed usage information.
+   Run `task-manager --help` or `node scripts/dev.js --help` to see detailed usage information.
 
 ## Listing Tasks
 
@@ -83,16 +83,16 @@ The `list` command allows you to view all tasks and their status:
 
 ```bash
 # List all tasks
-task-master list
+task-manager list
 
 # List tasks with a specific status
-task-master list --status=pending
+task-manager list --status=pending
 
 # List tasks and include their subtasks
-task-master list --with-subtasks
+task-manager list --with-subtasks
 
 # List tasks with a specific status and include their subtasks
-task-master list --status=pending --with-subtasks
+task-manager list --status=pending --with-subtasks
 ```
 
 ## Updating Tasks
@@ -101,13 +101,13 @@ The `update` command allows you to update tasks based on new information or impl
 
 ```bash
 # Update tasks starting from ID 4 with a new prompt
-task-master update --from=4 --prompt="Refactor tasks from ID 4 onward to use Express instead of Fastify"
+task-manager update --from=4 --prompt="Refactor tasks from ID 4 onward to use Express instead of Fastify"
 
 # Update all tasks (default from=1)
-task-master update --prompt="Add authentication to all relevant tasks"
+task-manager update --prompt="Add authentication to all relevant tasks"
 
 # Specify a different tasks file
-task-master update --file=custom-tasks.json --from=5 --prompt="Change database from MongoDB to PostgreSQL"
+task-manager update --file=custom-tasks.json --from=5 --prompt="Change database from MongoDB to PostgreSQL"
 ```
 
 Notes:
@@ -121,16 +121,16 @@ The `set-status` command allows you to change a task's status:
 
 ```bash
 # Mark a task as done
-task-master set-status --id=3 --status=done
+task-manager set-status --id=3 --status=done
 
 # Mark a task as pending
-task-master set-status --id=4 --status=pending
+task-manager set-status --id=4 --status=pending
 
 # Mark a specific subtask as done
-task-master set-status --id=3.1 --status=done
+task-manager set-status --id=3.1 --status=done
 
 # Mark multiple tasks at once
-task-master set-status --id=1,2,3 --status=done
+task-manager set-status --id=1,2,3 --status=done
 ```
 
 Notes:
@@ -146,25 +146,25 @@ The `expand` command allows you to break down tasks into subtasks for more detai
 
 ```bash
 # Expand a specific task with 3 subtasks (default)
-task-master expand --id=3
+task-manager expand --id=3
 
 # Expand a specific task with 5 subtasks
-task-master expand --id=3 --num=5
+task-manager expand --id=3 --num=5
 
 # Expand a task with additional context
-task-master expand --id=3 --prompt="Focus on security aspects"
+task-manager expand --id=3 --prompt="Focus on security aspects"
 
 # Expand all pending tasks that don't have subtasks
-task-master expand --all
+task-manager expand --all
 
 # Force regeneration of subtasks for all pending tasks
-task-master expand --all --force
+task-manager expand --all --force
 
 # Use Perplexity AI for research-backed subtask generation
-task-master expand --id=3 --research
+task-manager expand --id=3 --research
 
 # Use Perplexity AI for research-backed generation on all pending tasks
-task-master expand --all --research
+task-manager expand --all --research
 ```
 
 ## Clearing Subtasks
@@ -173,13 +173,13 @@ The `clear-subtasks` command allows you to remove subtasks from specified tasks:
 
 ```bash
 # Clear subtasks from a specific task
-task-master clear-subtasks --id=3
+task-manager clear-subtasks --id=3
 
 # Clear subtasks from multiple tasks
-task-master clear-subtasks --id=1,2,3
+task-manager clear-subtasks --id=1,2,3
 
 # Clear subtasks from all tasks
-task-master clear-subtasks --all
+task-manager clear-subtasks --all
 ```
 
 Notes:
@@ -219,10 +219,10 @@ The `add-dependency` and `remove-dependency` commands allow you to manage task d
 
 ```bash
 # Add a dependency to a task
-task-master add-dependency --id=<id> --depends-on=<id>
+task-manager add-dependency --id=<id> --depends-on=<id>
 
 # Remove a dependency from a task
-task-master remove-dependency --id=<id> --depends-on=<id>
+task-manager remove-dependency --id=<id> --depends-on=<id>
 ```
 
 These commands:
@@ -256,10 +256,10 @@ The `validate-dependencies` command allows you to check for invalid dependencies
 
 ```bash
 # Check for invalid dependencies in tasks.json
-task-master validate-dependencies
+task-manager validate-dependencies
 
 # Specify a different tasks file
-task-master validate-dependencies --file=custom-tasks.json
+task-manager validate-dependencies --file=custom-tasks.json
 ```
 
 This command:
@@ -277,10 +277,10 @@ The `fix-dependencies` command proactively finds and fixes all invalid dependenc
 
 ```bash
 # Find and fix all invalid dependencies
-task-master fix-dependencies
+task-manager fix-dependencies
 
 # Specify a different tasks file
-task-master fix-dependencies --file=custom-tasks.json
+task-manager fix-dependencies --file=custom-tasks.json
 ```
 
 This command:
@@ -305,19 +305,19 @@ The `analyze-complexity` command allows you to automatically assess task complex
 
 ```bash
 # Analyze all tasks and generate expansion recommendations
-task-master analyze-complexity
+task-manager analyze-complexity
 
 # Specify a custom output file
-task-master analyze-complexity --output=custom-report.json
+task-manager analyze-complexity --output=custom-report.json
 
 # Override the model used for analysis
-task-master analyze-complexity --model=claude-3-opus-20240229
+task-manager analyze-complexity --model=claude-3-opus-20240229
 
 # Set a custom complexity threshold (1-10)
-task-master analyze-complexity --threshold=6
+task-manager analyze-complexity --threshold=6
 
 # Use Perplexity AI for research-backed complexity analysis
-task-master analyze-complexity --research
+task-manager analyze-complexity --research
 ```
 
 Notes:
@@ -335,13 +335,13 @@ The `expand` command automatically checks for and uses complexity analysis if av
 
 ```bash
 # Expand a task, using complexity report recommendations if available
-task-master expand --id=8
+task-manager expand --id=8
 
 # Expand all tasks, prioritizing by complexity score if a report exists
-task-master expand --all
+task-manager expand --all
 
 # Override recommendations with explicit values
-task-master expand --id=8 --num=5 --prompt="Custom prompt"
+task-manager expand --id=8 --num=5 --prompt="Custom prompt"
 ```
 
 When a complexity report exists:
@@ -368,7 +368,7 @@ The output report structure is:
       "recommendedSubtasks": 6,
       "expansionPrompt": "Create subtasks that handle detecting...",
       "reasoning": "This task requires sophisticated logic...",
-      "expansionCommand": "task-master expand --id=8 --num=6 --prompt=\"Create subtasks...\" --research"
+      "expansionCommand": "task-manager expand --id=8 --num=6 --prompt=\"Create subtasks...\" --research"
     },
     // More tasks sorted by complexity score (highest first)
   ]
@@ -381,10 +381,10 @@ The `next` command helps you determine which task to work on next based on depen
 
 ```bash
 # Show the next task to work on
-task-master next
+task-manager next
 
 # Specify a different tasks file
-task-master next --file=custom-tasks.json
+task-manager next --file=custom-tasks.json
 ```
 
 This command:
@@ -411,16 +411,16 @@ The `show` command allows you to view detailed information about a specific task
 
 ```bash
 # Show details for a specific task
-task-master show 1
+task-manager show 1
 
 # Alternative syntax with --id option
-task-master show --id=1
+task-manager show --id=1
 
 # Show details for a subtask
-task-master show --id=1.2
+task-manager show --id=1.2
 
 # Specify a different tasks file
-task-master show 3 --file=custom-tasks.json
+task-manager show 3 --file=custom-tasks.json
 ```
 
 This command:

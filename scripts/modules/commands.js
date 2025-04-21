@@ -89,15 +89,15 @@ function registerCommands(programInstance) {
         console.log(boxen(
           chalk.white.bold('Parse PRD Help') + '\n\n' +
           chalk.cyan('Usage:') + '\n' +
-          `  task-master parse-prd <prd-file.txt> [options]\n\n` +
+          `  task-manager parse-prd <prd-file.txt> [options]\n\n` +
           chalk.cyan('Options:') + '\n' +
           '  -i, --input <file>       Path to the PRD file (alternative to positional argument)\n' +
           '  -o, --output <file>      Output file path (default: "tasks/tasks.json")\n' +
           '  -n, --num-tasks <number> Number of tasks to generate (default: 10)\n' +
           '  -k, --knowledge-base <path> Business knowledge documents to use as context\n\n' +
           chalk.cyan('Example:') + '\n' +
-          '  task-master parse-prd requirements.txt --num-tasks 15\n' +
-          '  task-master parse-prd --input=requirements.txt --knowledge-base=docs\n\n' +
+          '  task-manager parse-prd requirements.txt --num-tasks 15\n' +
+          '  task-manager parse-prd --input=requirements.txt --knowledge-base=docs\n\n' +
           chalk.yellow('Note: This command will:') + '\n' +
           '  1. Look for a PRD file at scripts/prd.txt by default\n' +
           '  2. Use the file specified by --input or positional argument if provided\n' +
@@ -508,8 +508,8 @@ function registerCommands(programInstance) {
             (dependencies.length > 0 ? chalk.white(`Dependencies: ${dependencies.join(', ')}`) + '\n' : '') +
             '\n' +
             chalk.white.bold('Next Steps:') + '\n' +
-            chalk.cyan(`1. Run ${chalk.yellow(`task-master show ${parentId}`)} to see the parent task with all subtasks`) + '\n' +
-            chalk.cyan(`2. Run ${chalk.yellow(`task-master set-status --id=${parentId}.${subtask.id} --status=in-progress`)} to start working on it`),
+            chalk.cyan(`1. Run ${chalk.yellow(`task-manager show ${parentId}`)} to see the parent task with all subtasks`) + '\n' +
+            chalk.cyan(`2. Run ${chalk.yellow(`task-manager set-status --id=${parentId}.${subtask.id} --status=in-progress`)} to start working on it`),
             { padding: 1, borderColor: 'green', borderStyle: 'round', margin: { top: 1 } }
           ));
         } else {
@@ -517,9 +517,9 @@ function registerCommands(programInstance) {
           console.log(boxen(
             chalk.white.bold('Usage Examples:') + '\n\n' +
             chalk.white('Convert existing task to subtask:') + '\n' +
-            chalk.yellow(`  task-master add-subtask --parent=5 --task-id=8`) + '\n\n' +
+            chalk.yellow(`  task-manager add-subtask --parent=5 --task-id=8`) + '\n\n' +
             chalk.white('Create new subtask:') + '\n' +
-            chalk.yellow(`  task-master add-subtask --parent=5 --title="Implement login UI" --description="Create the login form"`) + '\n\n',
+            chalk.yellow(`  task-manager add-subtask --parent=5 --title="Implement login UI" --description="Create the login form"`) + '\n\n',
             { padding: 1, borderColor: 'blue', borderStyle: 'round' }
           ));
           process.exit(1);
@@ -565,8 +565,8 @@ function registerCommands(programInstance) {
             chalk.white(`Status: ${getStatusWithColor(result.status)}`) + '\n' +
             chalk.white(`Dependencies: ${result.dependencies.join(', ')}`) + '\n\n' +
             chalk.white.bold('Next Steps:') + '\n' +
-            chalk.cyan(`1. Run ${chalk.yellow(`task-master show ${result.id}`)} to see details of the new task`) + '\n' +
-            chalk.cyan(`2. Run ${chalk.yellow(`task-master set-status --id=${result.id} --status=in-progress`)} to start working on it`),
+            chalk.cyan(`1. Run ${chalk.yellow(`task-manager show ${result.id}`)} to see details of the new task`) + '\n' +
+            chalk.cyan(`2. Run ${chalk.yellow(`task-manager set-status --id=${result.id} --status=in-progress`)} to start working on it`),
             { padding: 1, borderColor: 'green', borderStyle: 'round', margin: { top: 1 } }
           ));
         } else {
@@ -598,11 +598,11 @@ function registerCommands(programInstance) {
     .option('-y, --yes', 'Skip prompts and use default values')
     .option('--skip-install', 'Skip installing dependencies')
     .action(() => {
-      console.log(chalk.yellow('The init command must be run as a standalone command: task-master init'));
+      console.log(chalk.yellow('The init command must be run as a standalone command: task-manager init'));
       console.log(chalk.cyan('Example usage:'));
-      console.log(chalk.white('  task-master init -n "My Project" -d "Project description"'));
-      console.log(chalk.white('  task-master init -my_name "My Project" -my_description "Project description"'));
-      console.log(chalk.white('  task-master init -y'));
+      console.log(chalk.white('  task-manager init -n "My Project" -d "Project description"'));
+      console.log(chalk.white('  task-manager init -my_name "My Project" -my_description "Project description"'));
+      console.log(chalk.white('  task-manager init -y'));
       process.exit(0);
     });
 

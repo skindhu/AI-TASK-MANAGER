@@ -86,9 +86,9 @@ programInstance
   .action(async (options) => {
     const tasksPath = options.file;
     const archivePath = options.output;
-    
+
     console.log(chalk.blue(`Archiving completed tasks from ${tasksPath} to ${archivePath}...`));
-    
+
     const archivedCount = await archiveTasks(tasksPath, archivePath);
     displayArchiveResults(archivePath, archivedCount);
   });
@@ -105,10 +105,10 @@ For features requiring components in multiple modules:
     // Implementation...
     return difficultyScores;
   }
-  
+
   // In ui.js - depends on task-manager.js
   import { analyzeTasksDifficulty } from './task-manager.js';
-  
+
   function displayDifficultyReport(tasks) {
     const scores = analyzeTasksDifficulty(tasks);
     // Render the scores...
@@ -119,12 +119,12 @@ For features requiring components in multiple modules:
   ```javascript
   // In task-manager.js - depends on ui.js
   import { displayDifficultyReport } from './ui.js';
-  
+
   function analyzeTasks() {
     // Implementation...
     displayDifficultyReport(tasks); // WRONG! Don't call UI functions from task-manager
   }
-  
+
   // In ui.js - depends on task-manager.js
   import { analyzeTasks } from './task-manager.js';
   ```
@@ -133,7 +133,7 @@ For features requiring components in multiple modules:
 
 - **Naming Conventions**:
   - Use kebab-case for command names (`analyze-complexity`, not `analyzeComplexity`)
-  - Use kebab-case for option names (`--output-format`, not `--outputFormat`) 
+  - Use kebab-case for option names (`--output-format`, not `--outputFormat`)
   - Use the same option names across commands when they represent the same concept
 
 - **Command Structure**:
@@ -181,7 +181,7 @@ When implementing new features, follow these guidelines to ensure your code is t
     fileSystem.writeFile('task.json', JSON.stringify(task));
     logger.info('Task processed');
   }
-  
+
   // ❌ DON'T: Use hard-coded dependencies
   function processTask(task) {
     fs.writeFile('task.json', JSON.stringify(task));
@@ -198,7 +198,7 @@ When implementing new features, follow these guidelines to ensure your code is t
     // Pure logic that returns a value
     return computedPriority;
   }
-  
+
   function displayTaskPriority(task, dependencies) {
     const priority = calculateTaskPriority(task, dependencies);
     console.log(`Task priority: ${priority}`);
@@ -214,10 +214,10 @@ When implementing new features, follow these guidelines to ensure your code is t
     // Logic to determine version
     return version;
   }
-  
+
   // In setupCLI
   programInstance.version(getVersionString);
-  
+
   // In tests
   test('getVersionString returns correct version', () => {
     expect(getVersionString()).toBe('1.5.0');
@@ -248,7 +248,7 @@ Every new feature **must** include comprehensive tests following the guidelines 
      test('should perform expected operation with valid input', () => {
        expect(newFeatureUtil('valid input')).toBe('expected result');
      });
-     
+
      test('should handle edge cases appropriately', () => {
        expect(newFeatureUtil('')).toBeNull();
      });
@@ -299,12 +299,12 @@ For each new feature:
 Follow the existing command reference format:
 ```markdown
 - **Command Reference: your-command**
-  - CLI Syntax: `task-master your-command [options]`
+  - CLI Syntax: `task-manager your-command [options]`
   - Description: Brief explanation of what the command does
   - Parameters:
     - `--option1=<value>`: Description of option1 (default: 'default')
     - `--option2=<value>`: Description of option2 (required)
-  - Example: `task-master your-command --option1=value --option2=value2`
+  - Example: `task-manager your-command --option1=value --option2=value2`
   - Notes: Additional details, limitations, or special considerations
 ```
 

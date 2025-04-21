@@ -1,14 +1,14 @@
 {
-  "name": "task-master-ai",
+  "name": "ai-task-manager",
   "version": "0.9.30",
   "description": "A task management system for ambitious AI-driven development that doesn't overwhelm and confuse Cursor.",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "task-master": "bin/task-master.js",
-    "task-master-init": "bin/task-master-init.js",
-    "task-master-server": "scripts/server/server.js",
-    "task-master-mcp-server": "mcp-server/server.js"
+    "task-manager": "bin/task-manager.js",
+    "task-manager-init": "bin/task-manager-init.js",
+    "task-manager-server": "scripts/server/server.js",
+    "task-manager-mcp-server": "mcp-server/server.js"
   },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
@@ -16,7 +16,7 @@
     "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
     "prepare-package": "node scripts/prepare-package.js",
     "prepublishOnly": "npm run prepare-package",
-    "prepare": "chmod +x bin/task-master.js bin/task-master-init.js scripts/server/express-server.js",
+    "prepare": "chmod +x bin/task-manager.js bin/task-manager-init.js scripts/server/express-server.js",
     "changeset": "changeset",
     "release": "changeset publish"
   },
@@ -60,11 +60,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eyaltoledano/claude-task-master.git"
+    "url": "git+https://github.com/skindhu/AI-TASK-MANAGER"
   },
-  "homepage": "https://github.com/eyaltoledano/claude-task-master#readme",
+  "homepage": "https://github.com/skindhu/AI-TASK-MANAGER#readme",
   "bugs": {
-    "url": "https://github.com/eyaltoledano/claude-task-master/issues"
+    "url": "https://github.com/skindhu/AI-TASK-MANAGER/issues"
   },
   "files": [
     "scripts/init.js",
@@ -73,7 +73,7 @@
     "scripts/server/**",
     "assets/**",
     ".cursor/**",
-    "README-task-master.md",
+    "README-task-manager.md",
     "index.js",
     "bin/**",
     "mcp-server/**"

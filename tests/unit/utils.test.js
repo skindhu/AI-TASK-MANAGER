@@ -8,16 +8,16 @@ import path from 'path';
 import chalk from 'chalk';
 
 // Import the actual module to test
-import { 
-  truncate, 
-  log, 
-  readJSON, 
-  writeJSON, 
-  sanitizePrompt, 
-  readComplexityReport, 
-  findTaskInComplexityReport, 
-  taskExists, 
-  formatTaskId, 
+import {
+  truncate,
+  log,
+  readJSON,
+  writeJSON,
+  sanitizePrompt,
+  readComplexityReport,
+  findTaskInComplexityReport,
+  taskExists,
+  formatTaskId,
   findCycles,
   CONFIG,
   LOG_LEVELS,
@@ -42,19 +42,19 @@ function testDetectCamelCaseFlags(args) {
   for (const arg of args) {
     if (arg.startsWith('--')) {
       const flagName = arg.split('=')[0].slice(2); // Remove -- and anything after =
-      
+
       // Skip single-word flags - they can't be camelCase
       if (!flagName.includes('-') && !/[A-Z]/.test(flagName)) {
         continue;
       }
-      
+
       // Check for camelCase pattern (lowercase followed by uppercase)
       if (/[a-z][A-Z]/.test(flagName)) {
         const kebabVersion = toKebabCase(flagName);
         if (kebabVersion !== flagName) {
-          camelCaseFlags.push({ 
-            original: flagName, 
-            kebabCase: kebabVersion 
+          camelCaseFlags.push({
+            original: flagName,
+            kebabCase: kebabVersion
           });
         }
       }
@@ -76,7 +76,7 @@ describe('Utils Module', () => {
     fsWriteFileSyncSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation();
     fsExistsSyncSpy = jest.spyOn(fs, 'existsSync').mockImplementation();
     pathJoinSpy = jest.spyOn(path, 'join').mockImplementation();
-    
+
     // Clear all mocks before each test
     jest.clearAllMocks();
   });
@@ -119,7 +119,7 @@ describe('Utils Module', () => {
       // When maxLength is 0, slice(0, -3) returns 'He'
       const result1 = truncate('Hello', 0);
       expect(result1).toBe('He...');
-      
+
       // When maxLength is negative, slice(0, -8) returns nothing
       const result2 = truncate('Hello', -5);
       expect(result2).toBe('...');
@@ -129,12 +129,12 @@ describe('Utils Module', () => {
   describe('log function', () => {
     // Save original console.log
     const originalConsoleLog = console.log;
-    
+
     beforeEach(() => {
       // Mock console.log for each test
       console.log = jest.fn();
     });
-    
+
     afterEach(() => {
       // Restore original console.log after each test
       console.log = originalConsoleLog;
@@ -143,20 +143,20 @@ describe('Utils Module', () => {
     test('should log messages according to log level', () => {
       // Test with info level (1)
       CONFIG.logLevel = 'info';
-      
+
       log('debug', 'Debug message');
       log('info', 'Info message');
       log('warn', 'Warning message');
       log('error', 'Error message');
-      
+
       // Debug should not be logged (level 0 < 1)
       expect(console.log).not.toHaveBeenCalledWith(expect.stringContaining('Debug message'));
-      
+
       // Info and above should be logged
       expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Info message'));
       expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Warning message'));
       expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Error message'));
-      
+
       // Verify the formatting includes icons
       expect(console.log).toHaveBeenCalledWith(expect.stringContaining('ℹ️'));
       expect(console.log).toHaveBeenCalledWith(expect.stringContaining('⚠️'));
@@ -166,19 +166,19 @@ describe('Utils Module', () => {
     test('should not log messages below the configured log level', () => {
       // Set log level to error (3)
       CONFIG.logLevel = 'error';
-      
+
       log('debug', 'Debug message');
       log('info', 'Info message');
       log('warn', 'Warning message');
       log('error', 'Error message');
-      
+
       // Only error should be logged
       expect(console.log).not.toHaveBeenCalledWith(expect.stringContaining('Debug message'));
       expect(console.log).not.toHaveBeenCalledWith(expect.stringContaining('Info message'));
       expect(console.log).not.toHaveBeenCalledWith(expect.stringContaining('Warning message'));
       expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Error message'));
     });
-    
+
     test('should join multiple arguments into a single message', () => {
       CONFIG.logLevel = 'info';
       log('info', 'Message', 'with', 'multiple', 'parts');
@@ -190,9 +190,9 @@ describe('Utils Module', () => {
     test('should read and parse a valid JSON file', () => {
       const testData = { key: 'value', nested: { prop: true } };
       fsReadFileSyncSpy.mockReturnValue(JSON.stringify(testData));
-      
+
       const result = readJSON('test.json');
-      
+
       expect(fsReadFileSyncSpy).toHaveBeenCalledWith('test.json', 'utf8');
       expect(result).toEqual(testData);
     });
@@ -201,28 +201,28 @@ describe('Utils Module', () => {
       fsReadFileSyncSpy.mockImplementation(() => {
         throw new Error('ENOENT: no such file or directory');
       });
-      
+
       // Mock console.error
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       const result = readJSON('nonexistent.json');
-      
+
       expect(result).toBeNull();
-      
+
       // Restore console.error
       consoleSpy.mockRestore();
     });
 
     test('should handle invalid JSON format', () => {
       fsReadFileSyncSpy.mockReturnValue('{ invalid json: }');
-      
+
       // Mock console.error
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       const result = readJSON('invalid.json');
-      
+
       expect(result).toBeNull();
-      
+
       // Restore console.error
       consoleSpy.mockRestore();
     });
@@ -231,28 +231,28 @@ describe('Utils Module', () => {
   describe('writeJSON function', () => {
     test('should write JSON data to a file', () => {
       const testData = { key: 'value', nested: { prop: true } };
-      
+
       writeJSON('output.json', testData);
-      
+
       expect(fsWriteFileSyncSpy).toHaveBeenCalledWith(
-        'output.json', 
+        'output.json',
         JSON.stringify(testData, null, 2)
       );
     });
 
     test('should handle file write errors', () => {
       const testData = { key: 'value' };
-      
+
       fsWriteFileSyncSpy.mockImplementation(() => {
         throw new Error('Permission denied');
       });
-      
+
       // Mock console.error
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       // Function shouldn't throw, just log error
       expect(() => writeJSON('protected.json', testData)).not.toThrow();
-      
+
       // Restore console.error
       consoleSpy.mockRestore();
     });
@@ -262,16 +262,16 @@ describe('Utils Module', () => {
     test('should escape double quotes in prompts', () => {
       const prompt = 'This is a "quoted" prompt with "multiple" quotes';
       const expected = 'This is a \\"quoted\\" prompt with \\"multiple\\" quotes';
-      
+
       expect(sanitizePrompt(prompt)).toBe(expected);
     });
 
     test('should handle prompts with no special characters', () => {
       const prompt = 'This is a regular prompt without quotes';
-      
+
       expect(sanitizePrompt(prompt)).toBe(prompt);
     });
-    
+
     test('should handle empty strings', () => {
       expect(sanitizePrompt('')).toBe('');
     });
@@ -283,13 +283,13 @@ describe('Utils Module', () => {
         meta: { generatedAt: new Date().toISOString() },
         complexityAnalysis: [{ taskId: 1, complexityScore: 7 }]
       };
-      
+
       fsExistsSyncSpy.mockReturnValue(true);
       fsReadFileSyncSpy.mockReturnValue(JSON.stringify(testReport));
       pathJoinSpy.mockReturnValue('/path/to/report.json');
-      
+
       const result = readComplexityReport();
-      
+
       expect(fsExistsSyncSpy).toHaveBeenCalled();
       expect(fsReadFileSyncSpy).toHaveBeenCalledWith('/path/to/report.json', 'utf8');
       expect(result).toEqual(testReport);
@@ -298,9 +298,9 @@ describe('Utils Module', () => {
     test('should handle missing report file', () => {
       fsExistsSyncSpy.mockReturnValue(false);
       pathJoinSpy.mockReturnValue('/path/to/report.json');
-      
+
       const result = readComplexityReport();
-      
+
       expect(result).toBeNull();
       expect(fsReadFileSyncSpy).not.toHaveBeenCalled();
     });
@@ -310,13 +310,13 @@ describe('Utils Module', () => {
         meta: { generatedAt: new Date().toISOString() },
         complexityAnalysis: [{ taskId: 1, complexityScore: 7 }]
       };
-      
+
       fsExistsSyncSpy.mockReturnValue(true);
       fsReadFileSyncSpy.mockReturnValue(JSON.stringify(testReport));
-      
+
       const customPath = '/custom/path/report.json';
       const result = readComplexityReport(customPath);
-      
+
       expect(fsExistsSyncSpy).toHaveBeenCalledWith(customPath);
       expect(fsReadFileSyncSpy).toHaveBeenCalledWith(customPath, 'utf8');
       expect(result).toEqual(testReport);
@@ -332,9 +332,9 @@ describe('Utils Module', () => {
           { taskId: 3, complexityScore: 9 }
         ]
       };
-      
+
       const result = findTaskInComplexityReport(testReport, 2);
-      
+
       expect(result).toEqual({ taskId: 2, complexityScore: 4 });
     });
 
@@ -345,9 +345,9 @@ describe('Utils Module', () => {
           { taskId: 2, complexityScore: 4 }
         ]
       };
-      
+
       const result = findTaskInComplexityReport(testReport, 99);
-      
+
       // Fixing the expectation to match actual implementation
       // The function might return null or undefined based on implementation
       expect(result).toBeFalsy();
@@ -356,10 +356,10 @@ describe('Utils Module', () => {
     test('should handle invalid report structure', () => {
       // Test with null report
       expect(findTaskInComplexityReport(null, 1)).toBeNull();
-      
+
       // Test with missing complexityAnalysis
       expect(findTaskInComplexityReport({}, 1)).toBeNull();
-      
+
       // Test with non-array complexityAnalysis
       expect(findTaskInComplexityReport({ complexityAnalysis: {} }, 1)).toBeNull();
     });
@@ -369,8 +369,8 @@ describe('Utils Module', () => {
     const sampleTasks = [
       { id: 1, title: 'Task 1' },
       { id: 2, title: 'Task 2' },
-      { 
-        id: 3, 
+      {
+        id: 3,
         title: 'Task with subtasks',
         subtasks: [
           { id: 1, title: 'Subtask 1' },
@@ -394,7 +394,7 @@ describe('Utils Module', () => {
       expect(taskExists(sampleTasks, 99)).toBe(false);
       expect(taskExists(sampleTasks, '99')).toBe(false);
     });
-    
+
     test('should return false for non-existent subtask IDs', () => {
       expect(taskExists(sampleTasks, '3.99')).toBe(false);
       expect(taskExists(sampleTasks, '99.1')).toBe(false);
@@ -424,7 +424,7 @@ describe('Utils Module', () => {
       expect(formatTaskId('1.2')).toBe('1.2');
       expect(formatTaskId('42.7')).toBe('42.7');
     });
-    
+
     test('should handle edge cases', () => {
       // These should return as-is, though your implementation may differ
       expect(formatTaskId(null)).toBe(null);
@@ -440,9 +440,9 @@ describe('Utils Module', () => {
         ['A', ['B']],
         ['B', ['A']]
       ]);
-      
+
       const cycles = findCycles('A', dependencyMap);
-      
+
       expect(cycles.length).toBeGreaterThan(0);
       expect(cycles).toContain('A');
     });
@@ -454,9 +454,9 @@ describe('Utils Module', () => {
         ['B', ['C']],
         ['C', ['A']]
       ]);
-      
+
       const cycles = findCycles('A', dependencyMap);
-      
+
       expect(cycles.length).toBeGreaterThan(0);
       expect(cycles).toContain('A');
     });
@@ -468,32 +468,32 @@ describe('Utils Module', () => {
         ['B', ['C']],
         ['C', []]
       ]);
-      
+
       const cycles = findCycles('A', dependencyMap);
-      
+
       expect(cycles.length).toBe(0);
     });
 
     test('should handle empty dependency maps', () => {
       const dependencyMap = new Map();
-      
+
       const cycles = findCycles('A', dependencyMap);
-      
+
       expect(cycles.length).toBe(0);
     });
-    
+
     test('should handle nodes with no dependencies', () => {
       const dependencyMap = new Map([
         ['A', []],
         ['B', []],
         ['C', []]
       ]);
-      
+
       const cycles = findCycles('A', dependencyMap);
-      
+
       expect(cycles.length).toBe(0);
     });
-    
+
     test('should identify the breaking edge in a cycle', () => {
       // A -> B -> C -> D -> B (cycle)
       const dependencyMap = new Map([
@@ -502,9 +502,9 @@ describe('Utils Module', () => {
         ['C', ['D']],
         ['D', ['B']]
       ]);
-      
+
       const cycles = findCycles('A', dependencyMap);
-      
+
       expect(cycles).toContain('B');
     });
   });
@@ -517,11 +517,11 @@ describe('CLI Flag Format Validation', () => {
     expect(toKebabCase('numTasks')).toBe('num-tasks');
     expect(toKebabCase('alreadyKebabCase')).toBe('already-kebab-case');
   });
-  
+
   test('detectCamelCaseFlags should identify camelCase flags', () => {
-    const args = ['node', 'task-master', 'add-task', '--promptText=test', '--userID=123'];
+    const args = ['node', 'task-manager', 'add-task', '--promptText=test', '--userID=123'];
     const flags = testDetectCamelCaseFlags(args);
-    
+
     expect(flags).toHaveLength(2);
     expect(flags).toContainEqual({
       original: 'promptText',
@@ -532,18 +532,18 @@ describe('CLI Flag Format Validation', () => {
       kebabCase: 'user-id'
     });
   });
-  
+
   test('detectCamelCaseFlags should not flag kebab-case flags', () => {
-    const args = ['node', 'task-master', 'add-task', '--prompt-text=test', '--user-id=123'];
+    const args = ['node', 'task-manager', 'add-task', '--prompt-text=test', '--user-id=123'];
     const flags = testDetectCamelCaseFlags(args);
-    
+
     expect(flags).toHaveLength(0);
   });
-  
+
   test('detectCamelCaseFlags should respect single-word flags', () => {
-    const args = ['node', 'task-master', 'add-task', '--prompt=test', '--file=test.json', '--priority=high', '--promptText=test'];
+    const args = ['node', 'task-manager', 'add-task', '--prompt=test', '--file=test.json', '--priority=high', '--promptText=test'];
     const flags = testDetectCamelCaseFlags(args);
-    
+
     // Should only flag promptText, not the single-word flags
     expect(flags).toHaveLength(1);
     expect(flags).toContainEqual({
@@ -551,4 +551,4 @@ describe('CLI Flag Format Validation', () => {
       kebabCase: 'prompt-text'
     });
   });
-}); 
+});

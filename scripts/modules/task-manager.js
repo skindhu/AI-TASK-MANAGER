@@ -646,7 +646,7 @@ async function updateSingleTaskStatus(tasksPath, taskIdInput, newStatus, data) {
       // Suggest updating parent task if all subtasks are done
       if (allSubtasksDone && parentTask.status !== 'done' && parentTask.status !== 'completed') {
         console.log(chalk.yellow(`All subtasks of parent task ${parentId} are now marked as done.`));
-        console.log(chalk.yellow(`Consider updating the parent task status with: task-master set-status --id=${parentId} --status=done`));
+        console.log(chalk.yellow(`Consider updating the parent task status with: task-manager set-status --id=${parentId} --status=done`));
       }
     }
   } else {
@@ -1121,8 +1121,8 @@ function listTasks(tasksPath, statusFilter, withSubtasks = false) {
         `${chalk.white('Dependencies:')} ${nextTask.dependencies && nextTask.dependencies.length > 0 ? formatDependenciesWithStatus(nextTask.dependencies, data.tasks, true) : chalk.gray('None')}\n\n` +
         `${chalk.white('Description:')} ${nextTask.description}` +
         subtasksSection + '\n\n' +
-        `${chalk.cyan('Start working:')} ${chalk.yellow(`task-master set-status --id=${nextTask.id} --status=in-progress`)}\n` +
-        `${chalk.cyan('View details:')} ${chalk.yellow(`task-master show ${nextTask.id}`)}`,
+        `${chalk.cyan('Start working:')} ${chalk.yellow(`task-manager set-status --id=${nextTask.id} --status=in-progress`)}\n` +
+        `${chalk.cyan('View details:')} ${chalk.yellow(`task-manager show ${nextTask.id}`)}`,
         {
           padding: { left: 2, right: 2, top: 1, bottom: 1 },
           borderColor: '#FF8800',
@@ -1153,9 +1153,9 @@ function listTasks(tasksPath, statusFilter, withSubtasks = false) {
     // Show next steps
     console.log(boxen(
       chalk.white.bold('Suggested Next Steps:') + '\n\n' +
-      `${chalk.cyan('1.')} Run ${chalk.yellow('task-master next')} to see what to work on next\n` +
-      `${chalk.cyan('2.')} Run ${chalk.yellow('task-master expand --id=<id>')} to break down a task into subtasks\n` +
-      `${chalk.cyan('3.')} Run ${chalk.yellow('task-master set-status --id=<id> --status=done')} to mark a task as complete`,
+      `${chalk.cyan('1.')} Run ${chalk.yellow('task-manager next')} to see what to work on next\n` +
+      `${chalk.cyan('2.')} Run ${chalk.yellow('task-manager expand --id=<id>')} to break down a task into subtasks\n` +
+      `${chalk.cyan('3.')} Run ${chalk.yellow('task-manager set-status --id=<id> --status=done')} to mark a task as complete`,
       { padding: 1, borderColor: 'gray', borderStyle: 'round', margin: { top: 1 } }
     ));
   } catch (error) {
@@ -1337,9 +1337,9 @@ async function expandTask(taskId, numSubtasks = CONFIG.defaultSubtasks, useResea
     // Show next steps
     console.log(boxen(
       chalk.white.bold('Next Steps:') + '\n\n' +
-      `${chalk.cyan('1.')} Run ${chalk.yellow(`task-master show ${taskId}`)} to see the full task with subtasks\n` +
-      `${chalk.cyan('2.')} Start working on subtask: ${chalk.yellow(`task-master set-status --id=${taskId}.1 --status=in-progress`)}\n` +
-      `${chalk.cyan('3.')} Mark subtask as done: ${chalk.yellow(`task-master set-status --id=${taskId}.1 --status=done`)}`,
+      `${chalk.cyan('1.')} Run ${chalk.yellow(`task-manager show ${taskId}`)} to see the full task with subtasks\n` +
+      `${chalk.cyan('2.')} Start working on subtask: ${chalk.yellow(`task-manager set-status --id=${taskId}.1 --status=in-progress`)}\n` +
+      `${chalk.cyan('3.')} Mark subtask as done: ${chalk.yellow(`task-manager set-status --id=${taskId}.1 --status=done`)}`,
       { padding: 1, borderColor: 'cyan', borderStyle: 'round', margin: { top: 1 } }
     ));
   } catch (error) {
@@ -1501,9 +1501,9 @@ async function expandAllTasks(numSubtasks = CONFIG.defaultSubtasks, useResearch 
     // Show next steps
     console.log(boxen(
       chalk.white.bold('Next Steps:') + '\n\n' +
-      `${chalk.cyan('1.')} Run ${chalk.yellow('task-master list --with-subtasks')} to see all tasks and subtasks\n` +
-      `${chalk.cyan('2.')} Run ${chalk.yellow('task-master next')} to see the next task to work on\n` +
-      `${chalk.cyan('3.')} Run ${chalk.yellow('task-master set-status --id=<id> --status=in-progress')} to start a task`,
+      `${chalk.cyan('1.')} Run ${chalk.yellow('task-manager list --with-subtasks')} to see all tasks and subtasks\n` +
+      `${chalk.cyan('2.')} Run ${chalk.yellow('task-manager next')} to see the next task to work on\n` +
+      `${chalk.cyan('3.')} Run ${chalk.yellow('task-manager set-status --id=<id> --status=in-progress')} to start a task`,
       { padding: 1, borderColor: 'cyan', borderStyle: 'round', margin: { top: 1 } }
     ));
   } catch (error) {
@@ -1611,8 +1611,8 @@ function clearSubtasks(tasksPath, taskIds) {
     // Next steps suggestion
     console.log(boxen(
       chalk.white.bold('Next Steps:') + '\n\n' +
-      `${chalk.cyan('1.')} Run ${chalk.yellow('task-master expand --id=<id>')} to generate new subtasks\n` +
-      `${chalk.cyan('2.')} Run ${chalk.yellow('task-master list --with-subtasks')} to verify changes`,
+      `${chalk.cyan('1.')} Run ${chalk.yellow('task-manager expand --id=<id>')} to generate new subtasks\n` +
+      `${chalk.cyan('2.')} Run ${chalk.yellow('task-manager list --with-subtasks')} to verify changes`,
       { padding: 1, borderColor: 'cyan', borderStyle: 'round', margin: { top: 1 } }
     ));
 
@@ -1790,9 +1790,9 @@ async function addTask(tasksPath, prompt, dependencies = [], priority = 'medium'
     // Next steps suggestion
     console.log(boxen(
       chalk.white.bold('Next Steps:') + '\n\n' +
-      `${chalk.cyan('1.')} Run ${chalk.yellow('task-master generate')} to update task files\n` +
-      `${chalk.cyan('2.')} Run ${chalk.yellow('task-master expand --id=' + newTaskId)} to break it down into subtasks\n` +
-      `${chalk.cyan('3.')} Run ${chalk.yellow('task-master list --with-subtasks')} to see all tasks`,
+      `${chalk.cyan('1.')} Run ${chalk.yellow('task-manager generate')} to update task files\n` +
+      `${chalk.cyan('2.')} Run ${chalk.yellow('task-manager expand --id=' + newTaskId)} to break it down into subtasks\n` +
+      `${chalk.cyan('3.')} Run ${chalk.yellow('task-manager list --with-subtasks')} to see all tasks`,
       { padding: 1, borderColor: 'cyan', borderStyle: 'round', margin: { top: 1 } }
     ));
 

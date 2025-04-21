@@ -9,7 +9,7 @@
 
 ## 项目背景
 
-AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/claude-task-master) 项目的增强和改进版本。分析了原始项目的设计理念和能力后，发现其具有以下不足：
+AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledano/claude-task-manager) 项目的增强和改进版本。分析了原始项目的设计理念和能力后，发现其具有以下不足：
 
 1. **模型限制**：项目使用的Claude模型API费用高昂（输入$3/百万token，输出$15/百万token），且Claude风控极其严格，API在国内容易被封禁。
 2. **知识融合不足**：任务拆分完全依赖PRD文档，缺乏对业务知识的深入理解。
@@ -75,20 +75,20 @@ AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledan
 
 ```bash
 # 全局安装
-npm install -g task-master-ai
+npm install -g task-manager-ai
 
 # 或在项目中本地安装
-npm install task-master-ai
+npm install task-manager-ai
 ```
 
 ### 初始化新项目
 
 ```bash
 # 如果全局安装
-task-master init
+task-manager init
 
 # 如果本地安装
-npx task-master-init
+npx task-manager-init
 ```
 
 这将提示您输入项目详细信息，并设置一个具有必要文件和结构的新项目。
@@ -104,25 +104,25 @@ npx task-master-init
 
 ```bash
 # 初始化新项目
-task-master init
+task-manager init
 
 # 从PRD解析并生成任务
-task-master parse-prd your-prd.txt
+task-manager parse-prd your-prd.txt
 
 # 从PRD解析并生成任务，同时参考业务知识库
-task-master parse-prd your-prd.txt -k docs/
+task-manager parse-prd your-prd.txt -k docs/
 
 # 列出所有任务
-task-master list
+task-manager list
 
 # 显示下一个要处理的任务
-task-master next
+task-manager next
 
 # 生成任务文件
-task-master generate
+task-manager generate
 
 # 启动Web界面进行任务管理
-task-master server
+task-manager server
 ```
 
 ## 任务结构
@@ -151,13 +151,13 @@ Task Master现在支持在任务生成过程中引入业务知识库：
 
 ```bash
 # 使用知识库目录解析PRD
-task-master parse-prd your-prd.txt -k docs/
+task-manager parse-prd your-prd.txt -k docs/
 
 # 使用特定知识文件解析PRD
-task-master parse-prd your-prd.txt -k docs/domain_knowledge.md
+task-manager parse-prd your-prd.txt -k docs/domain_knowledge.md
 
 # 生成子任务时使用知识库(如果parse-prd时已使用知识库，则无需再次指定)
-task-master expand --id=3 -k docs/
+task-manager expand --id=3 -k docs/
 ```
 
 业务知识集成的优势：
@@ -188,16 +188,16 @@ Task Master包含内置的Web界面，用于任务可视化和管理。
 
 ```bash
 # 在默认端口(3002)上启动Web服务器
-task-master server
+task-manager server
 
 # 使用自定义端口
-task-master server --port=4000
+task-manager server --port=4000
 
 # 指定替代tasks.json文件
-task-master server --file=custom-tasks.json
+task-manager server --file=custom-tasks.json
 
 # 启动并显示调试路径信息
-task-master server --debug-paths
+task-manager server --debug-paths
 ```
 
 ### Web界面功能
@@ -261,7 +261,7 @@ Task Master专为与[Cursor AI](https://www.cursor.so/)无缝协作而设计，�
 4. 使用以下详细信息进行配置：
    - 名称："Task Master"
    - 类型："Command"
-   - 命令："npx -y --package task-master-ai task-master-mcp"
+   - 命令："npx -y --package task-manager-ai task-manager-mcp"
 5. 保存设置
 
 配置完成后，您可以直接通过Cursor的界面与Task Master的任务管理命令交互，提供更集成的体验。
@@ -271,19 +271,19 @@ Task Master专为与[Cursor AI](https://www.cursor.so/)无缝协作而设计，�
 在Cursor的AI聊天中，指示代理从您的PRD生成任务：
 
 ```
-请使用task-master parse-prd命令从我的PRD生成任务。PRD位于scripts/prd.txt。
+请使用task-manager parse-prd命令从我的PRD生成任务。PRD位于scripts/prd.txt。
 ```
 
 代理将执行：
 
 ```bash
-task-master parse-prd scripts/prd.txt
+task-manager parse-prd scripts/prd.txt
 ```
 
 或者，如果您想要利用业务知识库：
 
 ```bash
-task-master parse-prd scripts/prd.txt -k docs/
+task-manager parse-prd scripts/prd.txt -k docs/
 ```
 
 这将：
@@ -306,8 +306,8 @@ task-master parse-prd scripts/prd.txt -k docs/
 
 代理将：
 
-- 运行`task-master list`查看所有任务
-- 运行`task-master next`确定下一个要处理的任务
+- 运行`task-manager list`查看所有任务
+- 运行`task-manager next`确定下一个要处理的任务
 - 分析依赖关系，确定哪些任务已准备好进行处理
 - 基于优先级和ID顺序对任务进行优先排序
 - 建议下一个要实现的任务
@@ -346,7 +346,7 @@ task-master parse-prd scripts/prd.txt -k docs/
 代理将执行：
 
 ```bash
-task-master set-status --id=3 --status=done
+task-manager set-status --id=3 --status=done
 ```
 
 ### 5. 处理实现偏差
@@ -366,7 +366,7 @@ task-master set-status --id=3 --status=done
 代理将执行：
 
 ```bash
-task-master update --from=4 --prompt="现在我们使用Express而不是Fastify。"
+task-manager update --from=4 --prompt="现在我们使用Express而不是Fastify。"
 ```
 
 这将重写或重新调整tasks.json中的后续任务，同时保留已完成的工作。
@@ -382,7 +382,7 @@ task-master update --from=4 --prompt="现在我们使用Express而不是Fastify�
 代理将执行：
 
 ```bash
-task-master expand --id=5 --num=3
+task-manager expand --id=5 --num=3
 ```
 
 您可以提供额外的上下文：
@@ -394,7 +394,7 @@ task-master expand --id=5 --num=3
 代理将执行：
 
 ```bash
-task-master expand --id=5 --prompt="重点关注安全方面"
+task-manager expand --id=5 --prompt="重点关注安全方面"
 ```
 
 您还可以展开所有待处理的任务：
@@ -406,7 +406,7 @@ task-master expand --id=5 --prompt="重点关注安全方面"
 代理将执行：
 
 ```bash
-task-master expand --all
+task-manager expand --all
 ```
 
 对于使用Perplexity AI的研究支持的子任务生成：
@@ -418,7 +418,7 @@ task-master expand --all
 代理将执行：
 
 ```bash
-task-master expand --id=5 --research
+task-manager expand --id=5 --research
 ```
 
 ## 命令参考
@@ -429,78 +429,78 @@ task-master expand --id=5 --research
 
 ```bash
 # 解析PRD文件并生成任务
-task-master parse-prd <prd-file.txt>
+task-manager parse-prd <prd-file.txt>
 
 # 限制生成的任务数量
-task-master parse-prd <prd-file.txt> --num-tasks=10
+task-manager parse-prd <prd-file.txt> --num-tasks=10
 
 # 使用业务知识库解析PRD
-task-master parse-prd <prd-file.txt> -k docs/
+task-manager parse-prd <prd-file.txt> -k docs/
 
 # 使用特定知识文件解析PRD
-task-master parse-prd <prd-file.txt> -k docs/domain_knowledge.md
+task-manager parse-prd <prd-file.txt> -k docs/domain_knowledge.md
 ```
 
 ### 列出任务
 
 ```bash
 # 列出所有任务
-task-master list
+task-manager list
 
 # 列出具有特定状态的任务
-task-master list --status=<status>
+task-manager list --status=<status>
 
 # 列出带有子任务的任务
-task-master list --with-subtasks
+task-manager list --with-subtasks
 
 # 列出具有特定状态并包含子任务的任务
-task-master list --status=<status> --with-subtasks
+task-manager list --status=<status> --with-subtasks
 ```
 
 ### 显示下一个任务
 
 ```bash
 # 根据依赖关系和状态显示下一个要处理的任务
-task-master next
+task-manager next
 ```
 
 ### 显示特定任务
 
 ```bash
 # 显示特定任务的详细信息
-task-master show <id>
+task-manager show <id>
 # 或
-task-master show --id=<id>
+task-manager show --id=<id>
 
 # 查看特定子任务（例如，任务1的子任务2）
-task-master show 1.2
+task-manager show 1.2
 ```
 
 ### 更新任务
 
 ```bash
 # 从特定ID更新任务并提供上下文
-task-master update --from=<id> --prompt="<prompt>"
+task-manager update --from=<id> --prompt="<prompt>"
 ```
 
 ### 生成任务文件
 
 ```bash
 # 从tasks.json生成单独的任务文件
-task-master generate
+task-manager generate
 ```
 
 ### 设置任务状态
 
 ```bash
 # 设置单个任务的状态
-task-master set-status --id=<id> --status=<status>
+task-manager set-status --id=<id> --status=<status>
 
 # 设置多个任务的状态
-task-master set-status --id=1,2,3 --status=<status>
+task-manager set-status --id=1,2,3 --status=<status>
 
 # 设置子任务的状态
-task-master set-status --id=1.1,1.2 --status=<status>
+task-manager set-status --id=1.1,1.2 --status=<status>
 ```
 
 当将任务标记为"done"时，其所有子任务也将自动标记为"done"。
@@ -509,109 +509,109 @@ task-master set-status --id=1.1,1.2 --status=<status>
 
 ```bash
 # 使用子任务展开特定任务
-task-master expand --id=<id> --num=<number>
+task-manager expand --id=<id> --num=<number>
 
 # 使用额外上下文展开
-task-master expand --id=<id> --prompt="<context>"
+task-manager expand --id=<id> --prompt="<context>"
 
 # 展开所有待处理的任务
-task-master expand --all
+task-manager expand --all
 
 # 强制为已有子任务的任务重新生成子任务
-task-master expand --all --force
+task-manager expand --all --force
 
 # 为特定任务进行研究支持的子任务生成
-task-master expand --id=<id> --research
+task-manager expand --id=<id> --research
 
 # 为所有任务进行研究支持的生成
-task-master expand --all --research
+task-manager expand --all --research
 ```
 
 ### 清除子任务
 
 ```bash
 # 清除特定任务的子任务
-task-master clear-subtasks --id=<id>
+task-manager clear-subtasks --id=<id>
 
 # 清除多个任务的子任务
-task-master clear-subtasks --id=1,2,3
+task-manager clear-subtasks --id=1,2,3
 
 # 清除所有任务的子任务
-task-master clear-subtasks --all
+task-manager clear-subtasks --all
 ```
 
 ### 分析任务复杂度
 
 ```bash
 # 分析所有任务的复杂度
-task-master analyze-complexity
+task-manager analyze-complexity
 
 # 将报告保存到自定义位置
-task-master analyze-complexity --output=my-report.json
+task-manager analyze-complexity --output=my-report.json
 
 # 使用特定的LLM模型
-task-master analyze-complexity --model=claude-3-opus-20240229
+task-manager analyze-complexity --model=claude-3-opus-20240229
 
 # 设置自定义复杂度阈值（1-10）
-task-master analyze-complexity --threshold=6
+task-manager analyze-complexity --threshold=6
 
 # 使用替代的任务文件
-task-master analyze-complexity --file=custom-tasks.json
+task-manager analyze-complexity --file=custom-tasks.json
 
 # 使用Perplexity AI进行研究支持的复杂度分析
-task-master analyze-complexity --research
+task-manager analyze-complexity --research
 ```
 
 ### 查看复杂度报告
 
 ```bash
 # 显示任务复杂度分析报告
-task-master complexity-report
+task-manager complexity-report
 
 # 查看自定义位置的报告
-task-master complexity-report --file=my-report.json
+task-manager complexity-report --file=my-report.json
 ```
 
 ### 管理任务依赖
 
 ```bash
 # 向任务添加依赖
-task-master add-dependency --id=<id> --depends-on=<id>
+task-manager add-dependency --id=<id> --depends-on=<id>
 
 # 从任务中移除依赖
-task-master remove-dependency --id=<id> --depends-on=<id>
+task-manager remove-dependency --id=<id> --depends-on=<id>
 
 # 验证依赖而不修复它们
-task-master validate-dependencies
+task-manager validate-dependencies
 
 # 自动查找并修复无效的依赖
-task-master fix-dependencies
+task-manager fix-dependencies
 ```
 
 ### 添加新任务
 
 ```bash
 # 使用AI辅助添加新任务
-task-master add-task --prompt="<task description>"
+task-manager add-task --prompt="<task description>"
 
 # 添加带有依赖和优先级的任务
-task-master add-task --prompt="<task description>" --dependencies=1,2 --priority=high
+task-manager add-task --prompt="<task description>" --dependencies=1,2 --priority=high
 ```
 
 ### 服务器命令
 
 ```bash
 # 启动任务可视化和管理的Web服务器
-task-master server
+task-manager server
 
 # 使用自定义端口（默认为3002）
-task-master server --port=4000
+task-manager server --port=4000
 
 # 指定替代的tasks.json文件
-task-master server --file=custom-tasks.json
+task-manager server --file=custom-tasks.json
 
 # 调试服务器路径解析问题
-task-master server --debug-paths
+task-manager server --debug-paths
 ```
 
 ## 变更日志
@@ -621,7 +621,7 @@ task-master server --debug-paths
 - **模型升级**: 从Claude切换到Gemini 2.5 Pro，提供免费稳定的API访问
 - **知识库集成**: 在任务拆分时融入业务知识背景
 - **中英双语支持**: 同时生成任务的英文指令和中文描述
-- **Web管理界面**: 增加task-master server命令启动可视化任务管理系统
+- **Web管理界面**: 增加task-manager server命令启动可视化任务管理系统
 - **路由优化**: 修复路由优先级以确保正确处理API端点
 - **API错误处理**: 为API端点添加专用404响应
 - **静态文件解析**: 增强路径检测以可靠地提供静态资产

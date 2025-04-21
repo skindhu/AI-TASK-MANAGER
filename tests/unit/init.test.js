@@ -33,13 +33,13 @@ jest.mock('console', () => ({
 
 describe('Windsurf Rules File Handling', () => {
   let tempDir;
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Create a temporary directory for testing
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'task-master-test-'));
-    
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'task-manager-test-'));
+
     // Spy on fs methods
     jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
     jest.spyOn(fs, 'readFileSync').mockImplementation((filePath) => {
@@ -72,19 +72,19 @@ describe('Windsurf Rules File Handling', () => {
   function mockCopyTemplateFile(templateName, targetPath) {
     if (templateName === 'windsurfrules') {
       const filename = path.basename(targetPath);
-      
+
       if (filename === '.windsurfrules') {
         if (fs.existsSync(targetPath)) {
           // Should append content when file exists
           const existingContent = fs.readFileSync(targetPath, 'utf8');
-          const updatedContent = existingContent.trim() + 
-            '\n\n# Added by Claude Task Master - Development Workflow Rules\n\n' + 
+          const updatedContent = existingContent.trim() +
+            '\n\n# Added by Claude Task Master - Development Workflow Rules\n\n' +
             'New content';
           fs.writeFileSync(targetPath, updatedContent);
           return;
         }
       }
-      
+
       // If file doesn't exist, create it normally
       fs.writeFileSync(targetPath, 'New content');
     }
@@ -93,26 +93,26 @@ describe('Windsurf Rules File Handling', () => {
   test('creates .windsurfrules when it does not exist', () => {
     // Arrange
     const targetPath = path.join(tempDir, '.windsurfrules');
-    
+
     // Act
     mockCopyTemplateFile('windsurfrules', targetPath);
-    
+
     // Assert
     expect(fs.writeFileSync).toHaveBeenCalledWith(targetPath, 'New content');
   });
-  
+
   test('appends content to existing .windsurfrules', () => {
     // Arrange
     const targetPath = path.join(tempDir, '.windsurfrules');
     const existingContent = 'Existing windsurf rules content';
-    
+
     // Override the existsSync mock just for this test
     fs.existsSync.mockReturnValueOnce(true); // Target file exists
     fs.readFileSync.mockReturnValueOnce(existingContent);
-    
+
     // Act
     mockCopyTemplateFile('windsurfrules', targetPath);
-    
+
     // Assert
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       targetPath,
@@ -123,20 +123,20 @@ describe('Windsurf Rules File Handling', () => {
       expect.stringContaining('Added by Claude Task Master')
     );
   });
-  
+
   test('includes .windsurfrules in project structure creation', () => {
     // This test verifies the expected behavior by using a mock implementation
     // that represents how createProjectStructure should work
-    
+
     // Mock implementation of createProjectStructure
     function mockCreateProjectStructure(projectName) {
       // Copy template files including .windsurfrules
       mockCopyTemplateFile('windsurfrules', path.join(tempDir, '.windsurfrules'));
     }
-    
+
     // Act - call our mock implementation
     mockCreateProjectStructure('test-project');
-    
+
     // Assert - verify that .windsurfrules was created
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       path.join(tempDir, '.windsurfrules'),

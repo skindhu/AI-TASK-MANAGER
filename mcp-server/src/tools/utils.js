@@ -21,7 +21,7 @@ export function executeTaskMasterCommand(
 ) {
   try {
     log.info(
-      `Executing task-master ${command} with args: ${JSON.stringify(
+      `Executing task-manager ${command} with args: ${JSON.stringify(
         args
       )} in directory: ${cwd}`
     );
@@ -35,13 +35,13 @@ export function executeTaskMasterCommand(
       cwd: cwd,
     };
 
-    // Execute the command using the global task-master CLI or local script
+    // Execute the command using the global task-manager CLI or local script
     // Try the global CLI first
-    let result = spawnSync("task-master", fullArgs, spawnOptions);
+    let result = spawnSync("task-manager", fullArgs, spawnOptions);
 
     // If global CLI is not available, try fallback to the local script
     if (result.error && result.error.code === "ENOENT") {
-      log.info("Global task-master not found, falling back to local script");
+      log.info("Global task-manager not found, falling back to local script");
       result = spawnSync("node", ["scripts/dev.js", ...fullArgs], spawnOptions);
     }
 
@@ -67,7 +67,7 @@ export function executeTaskMasterCommand(
       stderr: result.stderr,
     };
   } catch (error) {
-    log.error(`Error executing task-master command: ${error.message}`);
+    log.error(`Error executing task-manager command: ${error.message}`);
     return {
       success: false,
       error: error.message,

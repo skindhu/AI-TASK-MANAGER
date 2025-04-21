@@ -26,9 +26,9 @@ function findStaticFilesDir() {
     // 从脚本位置向上查找
     path.resolve(__dirname, '../../assets/web-ui'),
     // 从仓库根目录查找
-    path.resolve(process.cwd(), 'claude-task-master/assets/web-ui'),
+    path.resolve(process.cwd(), 'claude-task-manager/assets/web-ui'),
     // 绝对路径下查找仓库路径
-    path.resolve('/Users/huli/open_source/claude-task-master/assets/web-ui')
+    path.resolve('/Users/huli/open_source/claude-task-manager/assets/web-ui')
   ];
 
   log('info', 'Searching for static files directory...');

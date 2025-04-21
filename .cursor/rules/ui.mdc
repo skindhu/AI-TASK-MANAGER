@@ -43,26 +43,26 @@ alwaysApply: false
   ```javascript
   // ✅ DO: Use consistent box styles by content type
   // For success messages:
-  boxen(content, { 
-    padding: 1, 
-    borderColor: 'green', 
-    borderStyle: 'round', 
-    margin: { top: 1 } 
+  boxen(content, {
+    padding: 1,
+    borderColor: 'green',
+    borderStyle: 'round',
+    margin: { top: 1 }
   })
 
   // For errors:
-  boxen(content, { 
-    padding: 1, 
-    borderColor: 'red', 
+  boxen(content, {
+    padding: 1,
+    borderColor: 'red',
     borderStyle: 'round'
   })
 
   // For information:
-  boxen(content, { 
-    padding: 1, 
-    borderColor: 'blue', 
-    borderStyle: 'round', 
-    margin: { top: 1, bottom: 1 } 
+  boxen(content, {
+    padding: 1,
+    borderColor: 'blue',
+    borderStyle: 'round',
+    margin: { top: 1, bottom: 1 }
   })
   ```
 
@@ -85,7 +85,7 @@ alwaysApply: false
     ],
     colWidths: [5, 40, 15, 10, 20]
   });
-  
+
   // Add content rows
   table.push([
     task.id,
@@ -94,7 +94,7 @@ alwaysApply: false
     chalk.white(task.priority || 'medium'),
     formatDependenciesWithStatus(task.dependencies, allTasks, true)
   ]);
-  
+
   console.log(table.toString());
   ```
 
@@ -127,7 +127,7 @@ alwaysApply: false
 - **Progress Reporting**:
   - Use visual indicators for progress (bars, percentages)
   - Include both numeric and visual representations
-  
+
   ```javascript
   // ✅ DO: Show clear progress indicators
   console.log(`${chalk.cyan('Tasks:')} ${completedTasks}/${totalTasks} (${completionPercentage.toFixed(1)}%)`);
@@ -144,10 +144,10 @@ alwaysApply: false
   // ✅ DO: Show suggested next actions
   console.log(boxen(
     chalk.white.bold('Next Steps:') + '\n\n' +
-    `${chalk.cyan('1.')} Run ${chalk.yellow('task-master list')} to view all tasks\n` +
-    `${chalk.cyan('2.')} Run ${chalk.yellow('task-master show --id=' + newTaskId)} to view details`,
+    `${chalk.cyan('1.')} Run ${chalk.yellow('task-manager list')} to view all tasks\n` +
+    `${chalk.cyan('2.')} Run ${chalk.yellow('task-manager show --id=' + newTaskId)} to view details`,
     { padding: 1, borderColor: 'cyan', borderStyle: 'round', margin: { top: 1 } }
   ));
   ```
 
-Refer to [`ui.js`](mdc:scripts/modules/ui.js) for implementation examples and [`new_features.mdc`](mdc:.cursor/rules/new_features.mdc) for integration guidelines. 
+Refer to [`ui.js`](mdc:scripts/modules/ui.js) for implementation examples and [`new_features.mdc`](mdc:.cursor/rules/new_features.mdc) for integration guidelines.

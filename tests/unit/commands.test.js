@@ -63,16 +63,16 @@ function detectCamelCaseFlags(args) {
   for (const arg of args) {
     if (arg.startsWith('--')) {
       const flagName = arg.split('=')[0].slice(2); // Remove -- and anything after =
-      
+
       // Skip if it's a single word (no hyphens) or already in kebab-case
       if (!flagName.includes('-')) {
         // Check for camelCase pattern (lowercase followed by uppercase)
         if (/[a-z][A-Z]/.test(flagName)) {
           const kebabVersion = toKebabCase(flagName);
           if (kebabVersion !== flagName) {
-            camelCaseFlags.push({ 
-              original: flagName, 
-              kebabCase: kebabVersion 
+            camelCaseFlags.push({
+              original: flagName,
+              kebabCase: kebabVersion
             });
           }
         }
@@ -128,7 +128,7 @@ describe('Commands Module', () => {
       mockExistsSync.mockReturnValue(true);
       mockReadFileSync.mockReturnValue('{"version": "1.0.0"}');
       mockJoin.mockReturnValue('package.json');
-      
+
       const program = setupCLI();
       const version = program._version();
       expect(mockReadFileSync).toHaveBeenCalledWith('package.json', 'utf8');
@@ -137,7 +137,7 @@ describe('Commands Module', () => {
 
     test('should use default version when package.json is not available', () => {
       mockExistsSync.mockReturnValue(false);
-      
+
       const program = setupCLI();
       const version = program._version();
       expect(mockReadFileSync).not.toHaveBeenCalled();
@@ -149,7 +149,7 @@ describe('Commands Module', () => {
       mockReadFileSync.mockImplementation(() => {
         throw new Error('Invalid JSON');
       });
-      
+
       const program = setupCLI();
       const version = program._version();
       expect(mockReadFileSync).toHaveBeenCalled();
@@ -159,10 +159,10 @@ describe('Commands Module', () => {
 
   describe('Kebab Case Validation', () => {
     test('should detect camelCase flags correctly', () => {
-      const args = ['node', 'task-master', '--camelCase', '--kebab-case'];
-      const camelCaseFlags = args.filter(arg => 
-        arg.startsWith('--') && 
-        /[A-Z]/.test(arg) && 
+      const args = ['node', 'task-manager', '--camelCase', '--kebab-case'];
+      const camelCaseFlags = args.filter(arg =>
+        arg.startsWith('--') &&
+        /[A-Z]/.test(arg) &&
         !arg.includes('-[A-Z]')
       );
       expect(camelCaseFlags).toContain('--camelCase');
@@ -170,10 +170,10 @@ describe('Commands Module', () => {
     });
 
     test('should accept kebab-case flags correctly', () => {
-      const args = ['node', 'task-master', '--kebab-case'];
-      const camelCaseFlags = args.filter(arg => 
-        arg.startsWith('--') && 
-        /[A-Z]/.test(arg) && 
+      const args = ['node', 'task-manager', '--kebab-case'];
+      const camelCaseFlags = args.filter(arg =>
+        arg.startsWith('--') &&
+        /[A-Z]/.test(arg) &&
         !arg.includes('-[A-Z]')
       );
       expect(camelCaseFlags).toHaveLength(0);
@@ -187,29 +187,29 @@ describe('Commands Module', () => {
       // Use input option if file argument not provided
       const inputFile = file || options.input;
       const defaultPrdPath = 'scripts/prd.txt';
-      
+
       // If no input file specified, check for default PRD location
       if (!inputFile) {
         if (fs.existsSync(defaultPrdPath)) {
           console.log(chalk.blue(`Using default PRD file: ${defaultPrdPath}`));
           const numTasks = parseInt(options.numTasks, 10);
           const outputPath = options.output;
-          
+
           console.log(chalk.blue(`Generating ${numTasks} tasks...`));
           await mockParsePRD(defaultPrdPath, outputPath, numTasks);
           return;
         }
-        
+
         console.log(chalk.yellow('No PRD file specified and default PRD file not found at scripts/prd.txt.'));
         return;
       }
-      
+
       const numTasks = parseInt(options.numTasks, 10);
       const outputPath = options.output;
-      
+
       console.log(chalk.blue(`Parsing PRD file: ${inputFile}`));
       console.log(chalk.blue(`Generating ${numTasks} tasks...`));
-      
+
       await mockParsePRD(inputFile, outputPath, numTasks);
     }
 
@@ -221,10 +221,10 @@ describe('Commands Module', () => {
     test('should use default PRD path when no arguments provided', async () => {
       // Arrange
       mockExistsSync.mockReturnValue(true);
-      
+
       // Act - call the handler directly with the right params
       await parsePrdAction(undefined, { numTasks: '10', output: 'tasks/tasks.json' });
-      
+
       // Assert
       expect(mockExistsSync).toHaveBeenCalledWith('scripts/prd.txt');
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Using default PRD file'));
@@ -238,10 +238,10 @@ describe('Commands Module', () => {
     test('should display help when no arguments and no default PRD exists', async () => {
       // Arrange
       mockExistsSync.mockReturnValue(false);
-      
+
       // Act - call the handler directly with the right params
       await parsePrdAction(undefined, { numTasks: '10', output: 'tasks/tasks.json' });
-      
+
       // Assert
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('No PRD file specified'));
       expect(mockParsePRD).not.toHaveBeenCalled();
@@ -250,10 +250,10 @@ describe('Commands Module', () => {
     test('should use explicitly provided file path', async () => {
       // Arrange
       const testFile = 'test/prd.txt';
-      
+
       // Act - call the handler directly with the right params
       await parsePrdAction(testFile, { numTasks: '10', output: 'tasks/tasks.json' });
-      
+
       // Assert
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining(`Parsing PRD file: ${testFile}`));
       expect(mockParsePRD).toHaveBeenCalledWith(testFile, 'tasks/tasks.json', 10);
@@ -263,10 +263,10 @@ describe('Commands Module', () => {
     test('should use file path from input option when provided', async () => {
       // Arrange
       const testFile = 'test/prd.txt';
-      
+
       // Act - call the handler directly with the right params
       await parsePrdAction(undefined, { input: testFile, numTasks: '10', output: 'tasks/tasks.json' });
-      
+
       // Assert
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining(`Parsing PRD file: ${testFile}`));
       expect(mockParsePRD).toHaveBeenCalledWith(testFile, 'tasks/tasks.json', 10);
@@ -278,12 +278,12 @@ describe('Commands Module', () => {
       const testFile = 'test/prd.txt';
       const outputFile = 'custom/output.json';
       const numTasks = 15;
-      
+
       // Act - call the handler directly with the right params
       await parsePrdAction(testFile, { numTasks: numTasks.toString(), output: outputFile });
-      
+
       // Assert
       expect(mockParsePRD).toHaveBeenCalledWith(testFile, outputFile, numTasks);
     });
   });
-}); 
+});

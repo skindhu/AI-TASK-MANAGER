@@ -74,7 +74,7 @@ function createDevScriptAction(commandName) {
         console.error(`  Instead of: --${flag.original}`);
         console.error(`  Use:        --${flag.kebabCase}`);
       });
-      console.error('\nExample: task-master parse-prd --num-tasks=5 instead of --numTasks=5\n');
+      console.error('\nExample: task-manager parse-prd --num-tasks=5 instead of --numTasks=5\n');
       process.exit(1);
     }
 
@@ -232,7 +232,7 @@ function registerInitCommand(program) {
 const program = new Command();
 
 program
-  .name('task-master')
+  .name('task-manager')
   .description('Claude Task Master CLI')
   .version(version)
   .addHelpText('afterAll', () => {
@@ -315,7 +315,7 @@ tempProgram.commands.forEach(cmd => {
 // Parse the command line arguments
 program.parse(process.argv);
 
-// Show help if no command was provided (just 'task-master' with no args)
+// Show help if no command was provided (just 'task-manager' with no args)
 if (process.argv.length <= 2) {
   displayBanner();
   displayHelp();
