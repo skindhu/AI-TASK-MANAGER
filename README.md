@@ -259,9 +259,20 @@ Task Master专为与[Cursor AI](https://www.cursor.so/)无缝协作而设计，�
 2. 导航到MCP部分
 3. 点击"添加新MCP服务器"
 4. 使用以下详细信息进行配置：
-   - 名称："Task Master"
-   - 类型："Command"
-   - 命令："npx -y --package task-manager-ai task-manager-mcp"
+```json
+{
+	"mcpServers": {
+		"ai-task-manager": {
+			"command": "npx",
+			"args": ["-y", "--package=ai-task-manager", "task-manager-mcp-server"],
+			"env": {
+				"GOOGLE_API_KEY": "YOUR_GEMINI_API_KEY_HERE",
+        "GEMINI_BASE_URL": "可选，GEMINI的代理"
+			}
+		}
+	}
+}
+```
 5. 保存设置
 
 配置完成后，您可以直接通过Cursor的界面与Task Master的任务管理命令交互，提供更集成的体验。
