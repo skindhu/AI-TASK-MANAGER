@@ -34,9 +34,8 @@ const geminiModel = genAI.getGenerativeModel({
   model: "gemini-2.5-pro-exp-03-25",
   generationConfig: {
     temperature: CONFIG.temperature,
-    maxOutputTokens: CONFIG.maxTokens,
   },
-}, {...getGeminiOptions(), apiVersion: 'v1beta'});
+}, {...getGeminiOptions(), apiVersion: 'v1beta', timeout: 3000000});
 
 // Lazy-loaded Perplexity client
 let perplexity = null;
@@ -86,6 +85,11 @@ function handleGeminiError(error) {
     return 'There was a network error connecting to Gemini. Please check your internet connection and try again.';
   }
 
+  // Check for rate limit error (429)
+  if (error.status === 429 || error.message?.includes('429') || error.message?.toLowerCase().includes('too many requests')) {
+    return 'Rate limit exceeded (429 Too Many Requests). Will retry after cooling down.';
+  }
+
   // Default error message
   return `Error communicating with Gemini: ${error.message}`;
 }
@@ -94,7 +98,7 @@ function handleGeminiError(error) {
  * Call Gemini to generate tasks from a PRD
  * @param {string} prdContent - PRD content
  * @param {string} prdPath - Path to the PRD file
- * @param {number} numTasks - Number of tasks to generate
+ * @param {number|null} numTasks - Number of tasks to generate, or null to let AI decide
  * @param {number} retryCount - Retry count
  * @param {string} knowledgeBase - Optional business knowledge context
  * @returns {Object} Gemini's response
@@ -129,15 +133,19 @@ async function callGemini(prdContent, prdPath, numTasks, retryCount = 0, knowled
 16. Keep all original English content intact in the primary fields (title, description, details, testStrategy)
 17. Ensure all technical terms are correctly translated` : '';
 
-    // Build the system prompt
+    // Build the system prompt with dynamic task count handling
     const systemPrompt = `You are an AI assistant helping to break down a Product Requirements Document (PRD) into a set of sequential development tasks.
-Your goal is to create ${numTasks} well-structured, actionable development tasks based on the PRD provided.
+${numTasks === null ?
+  `Your goal is to analyze the PRD's complexity and determine the OPTIMAL number of tasks. Break it down into as many tasks as are necessary to ensure each task is focused, atomic, and implementable. Use your judgment to create the most logical and efficient task breakdown structure based on the requirements.` :
+  `Your goal is to create ${numTasks} well-structured, actionable development tasks based on the PRD provided.`}
 
 Each task should follow this JSON structure:
 ${taskStructure}
 
 Guidelines:
-1. Create exactly ${numTasks} tasks, numbered from 1 to ${numTasks}
+1. ${numTasks === null ?
+   'Create the optimal number of tasks based on the PRD complexity - use your judgment to determine how many tasks are appropriate' :
+   `Create exactly ${numTasks} tasks, numbered from 1 to ${numTasks}`}
 2. Each task should be atomic and focused on a single responsibility
 3. Order tasks logically - consider dependencies and implementation sequence
 4. Early tasks should focus on setup, core functionality first, then advanced features
@@ -161,7 +169,7 @@ Expected output format:
   ],
   "metadata": {
     "projectName": "PRD Implementation",
-    "totalTasks": ${numTasks},
+    "totalTasks": ${numTasks === null ? '[AI determined count]' : numTasks},
     "sourceFile": "${prdPath}",
     "generatedAt": "YYYY-MM-DD"
   }
@@ -176,14 +184,27 @@ Important: Your response must be valid JSON only, with no additional explanation
     const userMessage = handleGeminiError(error);
     log('error', userMessage);
 
-    // Retry logic for certain errors
-    if (retryCount < 2 && (
+    // Check if we should retry
+    const shouldRetry = retryCount < 5 && (
       error.details?.code === 'RESOURCE_EXHAUSTED' ||
       error.message?.toLowerCase().includes('timeout') ||
-      error.message?.toLowerCase().includes('network')
-    )) {
-      const waitTime = (retryCount + 1) * 5000; // 5s, then 10s
-      log('info', `Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/2...`);
+      error.message?.toLowerCase().includes('network') ||
+      error.status === 429 ||
+      error.message?.includes('429') ||
+      error.message?.toLowerCase().includes('too many requests')
+    );
+
+    if (shouldRetry) {
+      // For 429 errors, wait at least 30 seconds
+      let waitTime = (retryCount + 1) * 5000; // 5s, 10s, 15s, 20s, 25s for other errors
+
+      if (error.status === 429 || error.message?.includes('429') || error.message?.toLowerCase().includes('too many requests')) {
+        waitTime = Math.max(30000, waitTime); // At least 30 seconds for rate limit errors
+        log('info', `Rate limit (429) hit. Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+      } else {
+        log('info', `Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+      }
+
       await new Promise(resolve => setTimeout(resolve, waitTime));
       return await callGemini(prdContent, prdPath, numTasks, retryCount + 1, knowledgeBase);
     } else {
@@ -200,14 +221,17 @@ Important: Your response must be valid JSON only, with no additional explanation
  * Handle request to Gemini
  * @param {string} prdContent - PRD content
  * @param {string} prdPath - Path to the PRD file
- * @param {number} numTasks - Number of tasks to generate
+ * @param {number|null} numTasks - Number of tasks to generate, or null to let AI decide
  * @param {number} maxTokens - Maximum tokens
  * @param {string} systemPrompt - System prompt
  * @param {string} knowledgeBase - Optional business knowledge context
+ * @param {number} retryCount - Current retry count
  * @returns {Object} Gemini's response
  */
-async function handleRequest(prdContent, prdPath, numTasks, maxTokens, systemPrompt, knowledgeBase = null) {
-  const loadingIndicator = startLoadingIndicator('Generating tasks from PRD...');
+async function handleRequest(prdContent, prdPath, numTasks, maxTokens, systemPrompt, knowledgeBase = null, retryCount = 0) {
+  const loadingIndicator = startLoadingIndicator(numTasks === null ?
+    'Analyzing PRD complexity and generating tasks...' :
+    'Generating tasks from PRD...');
   let responseText = '';
 
   try {
@@ -215,10 +239,10 @@ async function handleRequest(prdContent, prdPath, numTasks, maxTokens, systemPro
     let fullPrompt = '';
 
     if (knowledgeBase) {
-      fullPrompt = `${systemPrompt}\n\n${knowledgeBase}\n\nHere's the Product Requirements Document (PRD) to break down into ${numTasks} tasks:\n\n${prdContent}`;
+      fullPrompt = `${systemPrompt}\n\n${knowledgeBase}\n\nHere's the Product Requirements Document (PRD) to break down ${numTasks === null ? 'into appropriate tasks' : `into ${numTasks} tasks`}:\n\n${prdContent}`;
       log('info', 'Sending request to Gemini with business knowledge context...');
     } else {
-      fullPrompt = `${systemPrompt}\n\nHere's the Product Requirements Document (PRD) to break down into ${numTasks} tasks:\n\n${prdContent}`;
+      fullPrompt = `${systemPrompt}\n\nHere's the Product Requirements Document (PRD) to break down ${numTasks === null ? 'into appropriate tasks' : `into ${numTasks} tasks`}:\n\n${prdContent}`;
       log('info', 'Sending request to Gemini...');
     }
 
@@ -248,6 +272,33 @@ async function handleRequest(prdContent, prdPath, numTasks, maxTokens, systemPro
     // Get user-friendly error message
     const userMessage = handleGeminiError(error);
     log('error', userMessage);
+
+    // Check if we should retry
+    const shouldRetry = retryCount < 5 && (
+      error.details?.code === 'RESOURCE_EXHAUSTED' ||
+      error.message?.toLowerCase().includes('timeout') ||
+      error.message?.toLowerCase().includes('network') ||
+      error.status === 429 ||
+      error.message?.includes('429') ||
+      error.message?.toLowerCase().includes('too many requests')
+    );
+
+    if (shouldRetry) {
+      // For 429 errors, wait at least 30 seconds
+      let waitTime = (retryCount + 1) * 5000; // 5s, 10s, 15s, 20s, 25s for other errors
+
+      if (error.status === 429 || error.message?.includes('429') || error.message?.toLowerCase().includes('too many requests')) {
+        waitTime = Math.max(30000, waitTime); // At least 30 seconds for rate limit errors
+        log('info', `Rate limit (429) hit. Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+      } else {
+        log('info', `Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+      }
+
+      console.error(chalk.yellow(`Retrying request to Gemini (attempt ${retryCount + 1}/5)...`));
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return await handleRequest(prdContent, prdPath, numTasks, maxTokens, systemPrompt, knowledgeBase, retryCount + 1);
+    }
+
     console.error(chalk.red(userMessage));
 
     if (CONFIG.debug) {
@@ -261,7 +312,7 @@ async function handleRequest(prdContent, prdPath, numTasks, maxTokens, systemPro
 /**
  * Process Gemini's response
  * @param {string} textContent - Text content from Gemini
- * @param {number} numTasks - Number of tasks
+ * @param {number|null} numTasks - Number of tasks, null means AI determines
  * @param {number} retryCount - Retry count
  * @param {string} prdContent - PRD content
  * @param {string} prdPath - Path to the PRD file
@@ -285,9 +336,11 @@ function processClaudeResponse(textContent, numTasks, retryCount, prdContent, pr
       throw new Error("Gemini's response does not contain a valid tasks array");
     }
 
-    // Ensure we have the correct number of tasks
-    if (parsedData.tasks.length !== numTasks) {
+    // Check task count only if numTasks was specified
+    if (numTasks !== null && parsedData.tasks.length !== numTasks) {
       log('warn', `Expected ${numTasks} tasks, but received ${parsedData.tasks.length}`);
+    } else if (numTasks === null) {
+      log('info', `AI determined ${parsedData.tasks.length} tasks based on PRD complexity`);
     }
 
     // Add metadata if missing
@@ -298,6 +351,11 @@ function processClaudeResponse(textContent, numTasks, retryCount, prdContent, pr
         sourceFile: prdPath,
         generatedAt: new Date().toISOString().split('T')[0]
       };
+    } else {
+      // Update totalTasks with actual count if AI determined it
+      if (parsedData.metadata.totalTasks === '[AI determined count]') {
+        parsedData.metadata.totalTasks = parsedData.tasks.length;
+      }
     }
 
     return parsedData;
@@ -319,8 +377,10 @@ function processClaudeResponse(textContent, numTasks, retryCount, prdContent, pr
       // Create a fallback response with empty tasks
       log('warn', 'Failed to process after retries. Creating fallback task structure.');
 
+      // Default to 5 tasks if AI was supposed to determine count
+      const actualTaskCount = numTasks !== null ? numTasks : 5;
       const tasks = [];
-      for (let i = 1; i <= numTasks; i++) {
+      for (let i = 1; i <= actualTaskCount; i++) {
         const task = {
           id: i,
           title: `Task ${i}`,
@@ -347,7 +407,7 @@ function processClaudeResponse(textContent, numTasks, retryCount, prdContent, pr
         tasks: tasks,
         metadata: {
           projectName: "PRD Implementation",
-          totalTasks: numTasks,
+          totalTasks: actualTaskCount,
           sourceFile: prdPath,
           generatedAt: new Date().toISOString().split('T')[0],
           note: "Generated as fallback due to parsing error."
@@ -362,21 +422,26 @@ function processClaudeResponse(textContent, numTasks, retryCount, prdContent, pr
 /**
  * Generate subtasks for a task
  * @param {Object} task - Task to generate subtasks for
- * @param {number} numSubtasks - Number of subtasks to generate
+ * @param {number|null} numSubtasks - Number of subtasks to generate, or null to let AI decide
  * @param {number} nextSubtaskId - Next subtask ID
  * @param {string} additionalContext - Additional context
  * @param {string} knowledgeBase - Optional business knowledge context
+ * @param {number} retryCount - Current retry count
  * @returns {Array} Generated subtasks
  */
-async function generateSubtasks(task, numSubtasks, nextSubtaskId, additionalContext = '', knowledgeBase = null) {
+async function generateSubtasks(task, numSubtasks, nextSubtaskId, additionalContext = '', knowledgeBase = null, retryCount = 0) {
   try {
-    log('info', `Generating ${numSubtasks} subtasks for task ${task.id}: ${task.title}`);
+    log('info', numSubtasks
+      ? `Generating ${numSubtasks} subtasks for task ${task.id}: ${task.title}`
+      : `Generating optimal number of subtasks for task ${task.id}: ${task.title}`);
 
     const loadingIndicator = startLoadingIndicator(`Generating subtasks for task ${task.id}...`);
     let responseText = '';
 
     const systemPrompt = `You are an AI assistant helping with task breakdown for software development.
-You need to break down a high-level task into ${numSubtasks} specific subtasks that can be implemented one by one.
+${numSubtasks === null ?
+  `You need to analyze the complexity of the task and determine the OPTIMAL number of subtasks needed. Break it down into however many subtasks make the most sense for efficient implementation. Each subtask should be focused, achievable, and logical within the overall task structure. Don't artificially limit or expand the number - use only what's necessary for a clear implementation path.` :
+  `You need to break down a high-level task into ${numSubtasks} specific subtasks that can be implemented one by one.`}
 
 Subtasks should:
 1. Be specific and actionable implementation steps
@@ -435,7 +500,7 @@ IMPORTANT: For each subtask, also provide Chinese translations for the title, de
 These translations should be natural and fluent Chinese that accurately conveys the original English content.
 Include these translations in the "titleTrans", "descriptionTrans", "detailsTrans", and "testStrategyTrans" fields in the JSON response.` : '';
 
-    const userPrompt = `Please break down this task into ${numSubtasks} specific, actionable subtasks:
+    const userPrompt = `Please break down this task into ${numSubtasks ? `${numSubtasks}` : 'an optimal number of'} specific, actionable subtasks:
 
 Task ID: ${task.id}
 Title: ${task.title}
@@ -443,7 +508,7 @@ Description: ${task.description}
 Current details: ${task.details || 'None provided'}
 ${contextPrompt}${translationInstruction}
 
-Return exactly ${numSubtasks} subtasks with the following JSON structure:
+Return ${numSubtasks ? `exactly ${numSubtasks}` : 'the optimal number of'} subtasks with the following JSON structure:
 ${jsonStructureExample}
 
 Note on dependencies: Subtasks can depend on other subtasks with lower IDs. Use an empty array if there are no dependencies.`;
@@ -478,10 +543,46 @@ Note on dependencies: Subtasks can depend on other subtasks with lower IDs. Use 
 
       log('info', `Completed generating subtasks for task ${task.id}`);
 
-      return parseSubtasksFromText(responseText, nextSubtaskId, numSubtasks, task.id);
+      // Pass 0 as expectedCount when numSubtasks is null (AI determines count)
+      const expectedCount = numSubtasks || 0;
+      return parseSubtasksFromText(responseText, nextSubtaskId, expectedCount, task.id);
     } catch (error) {
       stopLoadingIndicator(loadingIndicator);
-      throw error;
+
+      // Get user-friendly error message
+      const userMessage = handleGeminiError(error);
+      log('error', userMessage);
+
+      // Check if we should retry
+      const shouldRetry = retryCount < 5 && (
+        error.details?.code === 'RESOURCE_EXHAUSTED' ||
+        error.message?.toLowerCase().includes('timeout') ||
+        error.message?.toLowerCase().includes('network') ||
+        error.status === 429 ||
+        error.message?.includes('429') ||
+        error.message?.toLowerCase().includes('too many requests')
+      );
+
+      if (shouldRetry) {
+        // For 429 errors, wait at least 30 seconds
+        let waitTime = (retryCount + 1) * 5000; // 5s, 10s, 15s, 20s, 25s for other errors
+
+        if (error.status === 429 || error.message?.includes('429') || error.message?.toLowerCase().includes('too many requests')) {
+          waitTime = Math.max(30000, waitTime); // At least 30 seconds for rate limit errors
+          log('info', `Rate limit (429) hit. Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+        } else {
+          log('info', `Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return await generateSubtasks(task, numSubtasks, nextSubtaskId, additionalContext, knowledgeBase, retryCount + 1);
+      } else {
+        console.error(chalk.red(userMessage));
+        if (CONFIG.debug) {
+          log('debug', 'Full error:', error);
+        }
+        throw error;
+      }
     }
   } catch (error) {
     log('error', `Error generating subtasks: ${error.message}`);
@@ -492,13 +593,14 @@ Note on dependencies: Subtasks can depend on other subtasks with lower IDs. Use 
 /**
  * Generate subtasks with research from Perplexity
  * @param {Object} task - Task to generate subtasks for
- * @param {number} numSubtasks - Number of subtasks to generate
+ * @param {number|null} numSubtasks - Number of subtasks to generate, or null to let AI decide
  * @param {number} nextSubtaskId - Next subtask ID
  * @param {string} additionalContext - Additional context
  * @param {string} knowledgeBase - Optional business knowledge context
+ * @param {number} retryCount - Current retry count
  * @returns {Array} Generated subtasks
  */
-async function generateSubtasksWithPerplexity(task, numSubtasks = 3, nextSubtaskId = 1, additionalContext = '', knowledgeBase = null) {
+async function generateSubtasksWithPerplexity(task, numSubtasks = null, nextSubtaskId = 1, additionalContext = '', knowledgeBase = null, retryCount = 0) {
   try {
     // First, perform research to get context
     log('info', `Researching context for task ${task.id}: ${task.title}`);
@@ -522,17 +624,54 @@ ${knowledgeBase}
 What are current best practices, libraries, design patterns, and implementation approaches?
 Include concrete code examples and technical considerations where relevant.${businessKnowledgeSection}`;
 
-    // Query Perplexity for research
-    const researchResponse = await perplexityClient.chat.completions.create({
-      model: PERPLEXITY_MODEL,
-      messages: [{
-        role: 'user',
-        content: researchQuery
-      }],
-      temperature: 0.1 // Lower temperature for more factual responses
-    });
+    let researchResult;
+    try {
+      // Query Perplexity for research
+      const researchResponse = await perplexityClient.chat.completions.create({
+        model: PERPLEXITY_MODEL,
+        messages: [{
+          role: 'user',
+          content: researchQuery
+        }],
+        temperature: 0.1 // Lower temperature for more factual responses
+      });
 
-    const researchResult = researchResponse.choices[0].message.content;
+      researchResult = researchResponse.choices[0].message.content;
+    } catch (error) {
+      stopLoadingIndicator(researchLoadingIndicator);
+
+      // Handle Perplexity API errors
+      log('error', `Perplexity API error: ${error.message}`);
+
+      // Check if we should retry Perplexity
+      const shouldRetryPerplexity = retryCount < 5 && (
+        error.message?.toLowerCase().includes('timeout') ||
+        error.message?.toLowerCase().includes('network') ||
+        error.status === 429 ||
+        error.message?.includes('429') ||
+        error.message?.toLowerCase().includes('too many requests') ||
+        error.message?.toLowerCase().includes('rate limit')
+      );
+
+      if (shouldRetryPerplexity) {
+        // For 429 errors, wait at least 30 seconds
+        let waitTime = (retryCount + 1) * 5000;
+
+        if (error.status === 429 || error.message?.includes('429') || error.message?.toLowerCase().includes('too many requests')) {
+          waitTime = Math.max(30000, waitTime);
+          log('info', `Perplexity rate limit hit. Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+        } else {
+          log('info', `Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return await generateSubtasksWithPerplexity(task, numSubtasks, nextSubtaskId, additionalContext, knowledgeBase, retryCount + 1);
+      } else {
+        // Fall back to regular generateSubtasks if Perplexity fails after retries
+        console.error(chalk.yellow(`Falling back to regular subtask generation after Perplexity research failed: ${error.message}`));
+        return await generateSubtasks(task, numSubtasks, nextSubtaskId, additionalContext, knowledgeBase);
+      }
+    }
 
     stopLoadingIndicator(researchLoadingIndicator);
     log('info', 'Research completed, now generating subtasks with additional context');
@@ -555,7 +694,9 @@ ${knowledgeBase}
     let responseText = '';
 
     const systemPrompt = `You are an AI assistant helping with task breakdown for software development.
-You need to break down a high-level task into ${numSubtasks} specific subtasks that can be implemented one by one.
+${numSubtasks === null ?
+  `You need to analyze the complexity of the task and determine the OPTIMAL number of subtasks needed. Break it down into however many subtasks make the most sense for efficient implementation, based on the research findings provided. Each subtask should be focused, achievable, and logical within the overall task structure. Don't artificially limit or expand the number - use only what's necessary for a clear implementation path.` :
+  `You need to break down a high-level task into ${numSubtasks} specific subtasks that can be implemented one by one.`}
 
 You have been provided with research on current best practices and implementation approaches.
 Use this research to inform and enhance your subtask breakdown.
@@ -614,7 +755,7 @@ IMPORTANT: For each subtask, also provide Chinese translations for the title, de
 These translations should be natural and fluent Chinese that accurately conveys the original English content.
 Include these translations in the "titleTrans", "descriptionTrans", "detailsTrans", and "testStrategyTrans" fields in the JSON response.` : '';
 
-    const userPrompt = `Please break down this task into ${numSubtasks} specific, well-researched, actionable subtasks:
+    const userPrompt = `Please break down this task into ${numSubtasks ? `${numSubtasks}` : 'an optimal number of'} specific, well-researched, actionable subtasks:
 
 Task ID: ${task.id}
 Title: ${task.title}
@@ -623,7 +764,7 @@ Current details: ${task.details || 'None provided'}
 
 ${combinedContext}${translationInstruction}
 
-Return exactly ${numSubtasks} subtasks with the following JSON structure:
+Return ${numSubtasks ? `exactly ${numSubtasks}` : 'the optimal number of'} subtasks with the following JSON structure:
 ${jsonStructureExample}
 
 Note on dependencies: Subtasks can depend on other subtasks with lower IDs. Use an empty array if there are no dependencies.`;
@@ -652,10 +793,46 @@ Note on dependencies: Subtasks can depend on other subtasks with lower IDs. Use 
 
       log('info', `Completed generating research-backed subtasks for task ${task.id}`);
 
-      return parseSubtasksFromText(responseText, nextSubtaskId, numSubtasks, task.id);
+      // Pass 0 as expectedCount when numSubtasks is null (AI determines count)
+      const expectedCount = numSubtasks || 0;
+      return parseSubtasksFromText(responseText, nextSubtaskId, expectedCount, task.id);
     } catch (error) {
       stopLoadingIndicator(loadingIndicator);
-      throw error;
+
+      // Get user-friendly error message
+      const userMessage = handleGeminiError(error);
+      log('error', userMessage);
+
+      // Check if we should retry Gemini
+      const shouldRetry = retryCount < 5 && (
+        error.details?.code === 'RESOURCE_EXHAUSTED' ||
+        error.message?.toLowerCase().includes('timeout') ||
+        error.message?.toLowerCase().includes('network') ||
+        error.status === 429 ||
+        error.message?.includes('429') ||
+        error.message?.toLowerCase().includes('too many requests')
+      );
+
+      if (shouldRetry) {
+        // For 429 errors, wait at least 30 seconds
+        let waitTime = (retryCount + 1) * 5000; // 5s, 10s, 15s, 20s, 25s for other errors
+
+        if (error.status === 429 || error.message?.includes('429') || error.message?.toLowerCase().includes('too many requests')) {
+          waitTime = Math.max(30000, waitTime); // At least 30 seconds for rate limit errors
+          log('info', `Rate limit (429) hit. Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+        } else {
+          log('info', `Waiting ${waitTime/1000} seconds before retry ${retryCount + 1}/5...`);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return await generateSubtasksWithPerplexity(task, numSubtasks, nextSubtaskId, additionalContext, knowledgeBase, retryCount + 1);
+      } else {
+        console.error(chalk.red(userMessage));
+        if (CONFIG.debug) {
+          log('debug', 'Full error:', error);
+        }
+        throw error;
+      }
     }
   } catch (error) {
     log('error', `Error generating research-backed subtasks: ${error.message}`);
@@ -667,7 +844,7 @@ Note on dependencies: Subtasks can depend on other subtasks with lower IDs. Use 
  * Parse subtasks from Gemini's response text
  * @param {string} text - Response text
  * @param {number} startId - Starting subtask ID
- * @param {number} expectedCount - Expected number of subtasks
+ * @param {number} expectedCount - Expected number of subtasks, 0 means AI decides count
  * @param {number} parentTaskId - Parent task ID
  * @returns {Array} Parsed subtasks
  */
@@ -690,8 +867,10 @@ function parseSubtasksFromText(text, startId, expectedCount, parentTaskId) {
       throw new Error("Parsed content is not an array");
     }
 
-    // Log warning if count doesn't match expected
-    if (subtasks.length !== expectedCount) {
+    // Log message based on expectedCount
+    if (expectedCount === 0) {
+      log('info', `AI determined ${subtasks.length} subtasks based on task complexity`);
+    } else if (subtasks.length !== expectedCount) {
       log('warn', `Expected ${expectedCount} subtasks, but parsed ${subtasks.length}`);
     }
 
@@ -755,9 +934,11 @@ function parseSubtasksFromText(text, startId, expectedCount, parentTaskId) {
     // Create a fallback array of empty subtasks if parsing fails
     log('warn', 'Creating fallback subtasks');
 
+    // For AI-determined count (expectedCount=0), default to 3 subtasks
+    const actualCount = expectedCount > 0 ? expectedCount : 3;
     const fallbackSubtasks = [];
 
-    for (let i = 0; i < expectedCount; i++) {
+    for (let i = 0; i < actualCount; i++) {
       const fallbackSubtask = {
         id: startId + i,
         title: `Subtask ${startId + i}`,

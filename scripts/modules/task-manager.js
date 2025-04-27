@@ -395,7 +395,7 @@ function generateTaskFiles(tasksPath, outputDir) {
     validateAndFixDependencies(data, tasksPath);
 
     // Generate task files
-    log('info', 'Generating individual task files...');
+    log('info', `Generating individual task files... (taskLength: ${data.tasks.length})`);
     data.tasks.forEach(task => {
       const taskPath = path.join(outputDir, `task_${task.id.toString().padStart(3, '0')}.txt`);
 
@@ -525,7 +525,7 @@ function generateTaskFiles(tasksPath, outputDir) {
       log('info', `Generated: task_${task.id.toString().padStart(3, '0')}.txt`);
     });
 
-    log('success', `All ${data.tasks.length} tasks have been generated into '${outputDir}'.`);
+    log('info', `All ${data.tasks.length} tasks have been generated into '${outputDir}'.`);
   } catch (error) {
     log('error', `Error generating task files: ${error.message}`);
     console.error(chalk.red(`Error generating task files: ${error.message}`));
@@ -578,14 +578,14 @@ async function setTaskStatus(tasksPath, taskIdInput, newStatus) {
 
     // Generate individual task files
     log('info', 'Regenerating task files...');
-    await generateTaskFiles(tasksPath, path.dirname(tasksPath));
+    generateTaskFiles(tasksPath, path.dirname(tasksPath));
 
     // Display success message
     for (const id of updatedTasks) {
       const task = findTaskById(data.tasks, id);
       const taskName = task ? task.title : id;
 
-      console.log(boxen(
+      console.log('info', boxen(
         chalk.white.bold(`Successfully updated task ${id} status:`) + '\n' +
         `From: ${chalk.yellow(task ? task.status : 'unknown')}\n` +
         `To:   ${chalk.green(newStatus)}`,

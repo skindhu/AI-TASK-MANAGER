@@ -60,7 +60,7 @@ function registerCommands(programInstance) {
     .argument('[file]', 'Path to the PRD file')
     .option('-i, --input <file>', 'Path to the PRD file (alternative to positional argument)')
     .option('-o, --output <file>', 'Output file path', 'tasks/tasks.json')
-    .option('-n, --num-tasks <number>', 'Number of tasks to generate', '10')
+    .option('-n, --num-tasks <number>', 'Number of tasks to generate (if not specified, AI will determine based on complexity)')
     .option('-k, --knowledge-base <path>', 'Path to business knowledge documents (file or directory) to use as context')
     .action(async (file, options) => {
       // Use input option if file argument not provided
@@ -71,11 +71,11 @@ function registerCommands(programInstance) {
       if (!inputFile) {
         if (fs.existsSync(defaultPrdPath)) {
           console.log(chalk.blue(`Using default PRD file: ${defaultPrdPath}`));
-          const numTasks = parseInt(options.numTasks, 10);
+          const numTasks = options.numTasks ? parseInt(options.numTasks, 10) : null;
           const outputPath = options.output;
           const knowledgeBasePath = options.knowledgeBase;
 
-          console.log(chalk.blue(`Generating ${numTasks} tasks...`));
+          console.log(chalk.blue(numTasks ? `Generating ${numTasks} tasks...` : 'Analyzing PRD to determine optimal task count...'));
 
           if (knowledgeBasePath) {
             console.log(chalk.blue(`Using business knowledge from: ${knowledgeBasePath}`));
@@ -107,18 +107,19 @@ function registerCommands(programInstance) {
         return;
       }
 
-      const numTasks = parseInt(options.numTasks, 10);
+      const numTasks = options.numTasks ? parseInt(options.numTasks, 10) : null;
       const outputPath = options.output;
       const knowledgeBasePath = options.knowledgeBase;
 
       console.log(chalk.blue(`Parsing PRD file: ${inputFile}`));
-      console.log(chalk.blue(`Generating ${numTasks} tasks...`));
+      console.log(chalk.blue(numTasks ? `Generating ${numTasks} tasks...` : 'Analyzing PRD to determine optimal task count...'));
 
       if (knowledgeBasePath) {
         console.log(chalk.blue(`Using business knowledge from: ${knowledgeBasePath}`));
       }
 
       await parsePRD(inputFile, outputPath, numTasks, knowledgeBasePath);
+      process.exit(0);
     });
 
   // update command
@@ -218,7 +219,7 @@ function registerCommands(programInstance) {
     .option('-f, --file <file>', 'Path to the tasks file', 'tasks/tasks.json')
     .option('-i, --id <id>', 'Task ID to expand')
     .option('-a, --all', 'Expand all tasks')
-    .option('-n, --num <number>', 'Number of subtasks to generate', CONFIG.defaultSubtasks.toString())
+    .option('-n, --num <number>', 'Number of subtasks to generate (if not specified, AI will determine based on task complexity)')
     .option('--research', 'Enable Perplexity AI for research-backed subtask generation')
     .option('-p, --prompt <text>', 'Additional context to guide subtask generation')
     .option('--force', 'Force regeneration of subtasks for tasks that already have them')
@@ -227,7 +228,7 @@ function registerCommands(programInstance) {
       const tasksPath = options.file;
       const idArg = options.id ? parseInt(options.id, 10) : null;
       const allFlag = options.all;
-      const numSubtasks = parseInt(options.num, 10);
+      const numSubtasks = options.num ? parseInt(options.num, 10) : null;
       const forceFlag = options.force;
       const useResearch = options.research === true;
       const additionalContext = options.prompt || '';
@@ -241,7 +242,7 @@ function registerCommands(programInstance) {
       }
 
       if (allFlag) {
-        console.log(chalk.blue(`Expanding all tasks with ${numSubtasks} subtasks each...`));
+        console.log(chalk.blue(numSubtasks ? `Expanding all tasks with ${numSubtasks} subtasks each...` : 'Expanding all tasks with AI-determined subtask count...'));
         if (useResearch) {
           console.log(chalk.blue('Using Perplexity AI for research-backed subtask generation'));
         } else {
@@ -252,7 +253,7 @@ function registerCommands(programInstance) {
         }
         await expandAllTasks(numSubtasks, useResearch, additionalContext, forceFlag, knowledgeBasePath);
       } else if (idArg) {
-        console.log(chalk.blue(`Expanding task ${idArg} with ${numSubtasks} subtasks...`));
+        console.log(chalk.blue(numSubtasks ? `Expanding task ${idArg} with ${numSubtasks} subtasks...` : `Expanding task ${idArg} with AI-determined subtask count...`));
         if (useResearch) {
           console.log(chalk.blue('Using Perplexity AI for research-backed subtask generation'));
         } else {
@@ -262,6 +263,7 @@ function registerCommands(programInstance) {
           console.log(chalk.blue(`Additional context: "${additionalContext}"`));
         }
         await expandTask(idArg, numSubtasks, useResearch, additionalContext, knowledgeBasePath);
+        process.exit(0);
       } else {
         console.error(chalk.red('Error: Please specify a task ID with --id=<id> or use --all to expand all tasks.'));
       }

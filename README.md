@@ -39,7 +39,7 @@ AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledan
 - **业务知识融合**: 任务拆分时可引入业务知识背景，提高任务理解质量
 - **中英双语支持**: 同时生成英文指令和中文描述，兼顾使用体验和执行质量
 - **可视化界面**: 提供Web界面进行任务管理，摆脱繁琐的命令行操作
-- **灵活任务拆分**: 智能决定最适合的任务拆解粒度
+- **智能任务拆分**: 能够根据PRD和任务复杂度自动决定最适合的拆分粒度，无需手动指定数量
 
 ## 系统要求
 
@@ -64,7 +64,7 @@ AI Task Master 是对原始 [claude-task-manager](https://github.com/eyaltoledan
 - `PERPLEXITY_MODEL`: 指定要使用的Perplexity模型 (默认: "sonar-pro")
 - `DEBUG`: 启用调试日志 (默认: false)
 - `LOG_LEVEL`: 日志级别 - debug, info, warn, error (默认: info)
-- `DEFAULT_SUBTASKS`: 展开时的默认子任务数量 (默认: 3)
+- `DEFAULT_SUBTASKS`: 当手动指定子任务数量时的默认值 (默认: 3)
 - `DEFAULT_PRIORITY`: 生成任务的默认优先级 (默认: medium)
 - `PROJECT_NAME`: 覆盖tasks.json中的默认项目名称
 - `PROJECT_VERSION`: 覆盖tasks.json中的默认版本
@@ -106,8 +106,11 @@ npx task-manager-init
 # 初始化新项目
 task-manager init
 
-# 从PRD解析并生成任务
+# 从PRD解析并生成任务 (AI将自动决定任务数量)
 task-manager parse-prd your-prd.txt
+
+# 从PRD解析并生成指定数量的任务
+task-manager parse-prd your-prd.txt --num-tasks=10
 
 # 从PRD解析并生成任务，同时参考业务知识库
 task-manager parse-prd your-prd.txt -k docs/
@@ -144,6 +147,28 @@ tasks.json中的任务具有以下结构：
 - `testStrategy`: 验证方法 (例如: `"Deploy and call endpoint to confirm 'Hello World' response."`)
 - `testStrategyTrans`: 测试策略的中文翻译 (当设置USE_CHINESE时生成)
 - `subtasks`: 构成主任务的更小、更具体的任务列表 (例如: `[{"id": 1, "title": "Configure OAuth", ...}]`)
+
+## 智能任务拆分
+
+Task Master 现在支持基于复杂度的智能任务拆分：
+
+```bash
+# 从PRD生成任务（AI自动决定最合适的任务数量）
+task-manager parse-prd your-prd.txt
+
+# 将任务拆分为子任务（AI自动决定最合适的子任务数量）
+task-manager expand --id=3
+
+# 也可以手动指定数量
+task-manager parse-prd your-prd.txt --num-tasks=15
+task-manager expand --id=3 --num=5
+```
+
+智能拆分的优势：
+- AI根据PRD和任务复杂度自行决定最合理的拆分粒度
+- 不同复杂度的任务可以有不同数量的子任务
+- 减少了人工决策负担，让拆分更符合实际需求
+- 当系统不指定数量时，AI会根据内容深度分析并提供最佳拆分方案
 
 ## 业务知识集成
 

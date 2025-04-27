@@ -1,6 +1,6 @@
 {
   "name": "ai-task-manager",
-  "version": "0.9.34",
+  "version": "0.9.35",
   "description": "A task management system for ambitious AI-driven development that doesn't overwhelm and confuse Cursor.",
   "main": "index.js",
   "type": "module",
