@@ -1700,7 +1700,7 @@ async function addTask(tasksPath, prompt, dependencies = [], priority = 'medium'
   IMPORTANT: Return ONLY the JSON object, nothing else.`;
 
   // Start the loading indicator
-  const loadingIndicator = startLoadingIndicator('Generating new task with Claude AI...');
+  const loadingIndicator = startLoadingIndicator('Generating new task with Gemini AI...');
 
   let fullResponse = '';
   let streamingInterval = null;
@@ -1751,7 +1751,7 @@ async function addTask(tasksPath, prompt, dependencies = [], priority = 'medium'
         throw new Error("Missing required fields in the generated task");
       }
     } catch (error) {
-      log('error', "Failed to parse Claude's response as valid task JSON:", error);
+      log('error', "Failed to parse Gemini's response as valid task JSON:", error);
       log('debug', "Response content:", fullResponse);
       process.exit(1);
     }

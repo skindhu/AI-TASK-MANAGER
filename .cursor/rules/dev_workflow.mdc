@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 - **Global CLI Commands**
   - Task Master now provides a global CLI through the `task-manager` command
   - All functionality from `scripts/dev.js` is available through this interface

@@ -35,7 +35,7 @@ export function registerAddTaskTool(server) {
           "Root directory of the project (default: current working directory)"
         ),
     }),
-    execute: async (args, { log }) => {
+    execute: async (args, { log, session }) => {
       try {
         log.info(`Adding new task: ${args.prompt}`);
 
@@ -44,12 +44,13 @@ export function registerAddTaskTool(server) {
           cmdArgs.push(`--dependencies=${args.dependencies}`);
         if (args.priority) cmdArgs.push(`--priority=${args.priority}`);
         if (args.file) cmdArgs.push(`--file=${args.file}`);
-
+        // Get project root from args or session
+				const rootFolder = args.projectRoot || getProjectRootFromSession(session, log);
         const result = executeTaskMasterCommand(
           "add-task",
           log,
           cmdArgs,
-          projectRoot
+          rootFolder
         );
 
         if (!result.success) {
